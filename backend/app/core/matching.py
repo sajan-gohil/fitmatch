@@ -12,6 +12,10 @@ TITLE_WEIGHT = 0.30
 SKILLS_WEIGHT = 0.40
 EXPERIENCE_WEIGHT = 0.20
 EDUCATION_WEIGHT = 0.10
+SENIOR_ROLE_MISMATCH_SCORE = 60.0
+STAFF_ROLE_MISMATCH_SCORE = 50.0
+EDUCATION_WITH_DEGREE_SCORE = 100.0
+EDUCATION_WITHOUT_DEGREE_SCORE = 70.0
 
 
 @dataclass(frozen=True)
@@ -27,6 +31,10 @@ def _normalize_score(value: float) -> float:
     return round(max(0.0, min(100.0, value)), 2)
 
 
+def _similarity_to_percentage(similarity: float) -> float:
+    return _normalize_score(((similarity + 1) / 2) * 100)
+
+
 def compute_match_score(resume: dict[str, Any], job: dict[str, Any]) -> MatchScore:
     parsed = resume.get("parsed", {}) if isinstance(resume.get("parsed"), dict) else {}
     resume_target_role = str(parsed.get("target_role", "")).strip()
@@ -36,7 +44,7 @@ def compute_match_score(resume: dict[str, Any], job: dict[str, Any]) -> MatchSco
         generate_embedding(resume_target_role),
         generate_embedding(job_title),
     )
-    title_score = _normalize_score(((title_similarity + 1) / 2) * 100)
+    title_score = _similarity_to_percentage(title_similarity)
 
     resume_skills = parsed.get("skills", [])
     if not isinstance(resume_skills, list):
@@ -51,12 +59,16 @@ def compute_match_score(resume: dict[str, Any], job: dict[str, Any]) -> MatchSco
 
     experience_score = 100.0
     if "senior" in job_title.lower() and "senior" not in resume_target_role.lower():
-        experience_score = 60.0
+        experience_score = SENIOR_ROLE_MISMATCH_SCORE
     elif "staff" in job_title.lower() and "staff" not in resume_target_role.lower():
-        experience_score = 50.0
+        experience_score = STAFF_ROLE_MISMATCH_SCORE
     experience_score = _normalize_score(experience_score)
 
-    education_score = 100.0 if "degree" in job_description else 70.0
+    education_score = (
+        EDUCATION_WITH_DEGREE_SCORE
+        if "degree" in job_description
+        else EDUCATION_WITHOUT_DEGREE_SCORE
+    )
     education_score = _normalize_score(education_score)
 
     weighted = (
