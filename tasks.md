@@ -53,8 +53,8 @@ This list includes tasks an AI agent can execute end-to-end inside the product/c
 
 ## Notifications & Personalization
 - [ ] Phase 1: Implement digest scheduler for free users and baseline notification jobs.
-- [ ] Phase 2: Implement trigger engine for high-match, company-watch, salary-threshold, deadline, resume-freshness, and skill-gap signals.
 - [ ] Phase 2: Build notification preference model (trigger/channel/time-window/min-score).
+- [ ] Phase 2: Implement trigger engine for high-match, company-watch, salary-threshold, deadline, resume-freshness, and skill-gap signals.
 - [ ] Phase 2: Implement email notification channel and templated delivery flow.
 - [ ] Phase 2: Implement in-app/web push notification flow.
 - [ ] Phase 2: Implement optional SMS channel integration hooks.
@@ -81,9 +81,9 @@ This list includes tasks an AI agent can execute end-to-end inside the product/c
 - [ ] Phase 3: Build API-access gating for eligible tier users.
 
 ## Marketing/SEO Tasks AI Can Fully Automate In-Product
-- [ ] Phase 2: Generate programmatic SEO pages from job data templates (role/city/company/skill variants).
 - [ ] Phase 1: Build landing page sections and copy variants from approved messaging.
 - [ ] Phase 1: Auto-generate FAQ drafts from known objections and product capabilities.
+- [ ] Phase 2: Generate programmatic SEO pages from job data templates (role/city/company/skill variants).
 - [ ] Phase 2: Generate ongoing data-driven content drafts from internal analytics datasets.
 
 ## Analytics, Monitoring, and Reliability
