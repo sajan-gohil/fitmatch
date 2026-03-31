@@ -11,12 +11,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Add Redis wiring for queues/cache plus baseline background worker scaffold.
   - [x] Add basic observability hooks (structured logs + error reporting stubs) and health endpoints.
 
-- [ ] **Phase 2 — Authentication, onboarding, and resume ingestion**
-  - [ ] Implement Supabase auth flow (magic link + Google OAuth) with protected app routes.
-  - [ ] Build onboarding form for target roles, preferred locations, and work type preferences.
-  - [ ] Implement resume upload pipeline (PDF/DOCX) to storage with validation and size limits.
-  - [ ] Implement LLM-based resume parser that stores normalized structured resume data.
-  - [ ] Add onboarding completion state and first-run dashboard handoff.
+- [x] **Phase 2 — Authentication, onboarding, and resume ingestion**
+  - [x] Implement Supabase auth flow (magic link + Google OAuth) with protected app routes.
+  - [x] Build onboarding form for target roles, preferred locations, and work type preferences.
+  - [x] Implement resume upload pipeline (PDF/DOCX) to storage with validation and size limits.
+  - [x] Implement LLM-based resume parser that stores normalized structured resume data.
+  - [x] Add onboarding completion state and first-run dashboard handoff.
 
 - [ ] **Phase 3 — Job ingestion pipeline (MVP sources)**
   - [ ] Build Playwright/Scrapy ingestion framework with pluggable ATS adapters.
