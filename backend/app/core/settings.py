@@ -29,6 +29,15 @@ class Settings(BaseSettings):
         default="resumes", alias="FITMATCH_RESUME_STORAGE_BUCKET"
     )
     llm_provider: str = Field(default="openai", alias="FITMATCH_LLM_PROVIDER")
+    scrape_retry_attempts: int = Field(default=3, alias="FITMATCH_SCRAPE_RETRY_ATTEMPTS")
+    scrape_tier1_interval_minutes: int = Field(
+        default=360,
+        alias="FITMATCH_SCRAPE_TIER1_INTERVAL_MINUTES",
+    )
+    scrape_tier2_interval_minutes: int = Field(
+        default=1440,
+        alias="FITMATCH_SCRAPE_TIER2_INTERVAL_MINUTES",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

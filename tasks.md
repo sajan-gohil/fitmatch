@@ -18,12 +18,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Implement LLM-based resume parser that stores normalized structured resume data.
   - [x] Add onboarding completion state and first-run dashboard handoff.
 
-- [ ] **Phase 3 — Job ingestion pipeline (MVP sources)**
-  - [ ] Build Playwright/Scrapy ingestion framework with pluggable ATS adapters.
-  - [ ] Implement adapters for Greenhouse, Lever, Workday, SmartRecruiters, and Ashby.
-  - [ ] Normalize and deduplicate scraped jobs into canonical job tables.
-  - [ ] Add scrape scheduling, retry/backoff, and dead-letter handling.
-  - [ ] Persist raw snapshots/metadata needed for traceability and re-processing.
+- [x] **Phase 3 — Job ingestion pipeline (MVP sources)**
+  - [x] Build Playwright/Scrapy ingestion framework with pluggable ATS adapters.
+  - [x] Implement adapters for Greenhouse, Lever, Workday, SmartRecruiters, and Ashby.
+  - [x] Normalize and deduplicate scraped jobs into canonical job tables.
+  - [x] Add scrape scheduling, retry/backoff, and dead-letter handling.
+  - [x] Persist raw snapshots/metadata needed for traceability and re-processing.
 
 - [ ] **Phase 4 — Embeddings and semantic matching engine**
   - [ ] Add resume/job embedding generation pipeline and pgvector persistence.
