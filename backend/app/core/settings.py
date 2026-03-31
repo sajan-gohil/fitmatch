@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     error_reporting_dsn: str | None = Field(
         default=None, alias="FITMATCH_ERROR_REPORTING_DSN"
     )
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000",
+        alias="FITMATCH_CORS_ORIGINS",
+    )
+    auth_provider: str = Field(default="supabase", alias="FITMATCH_AUTH_PROVIDER")
+    resume_storage_bucket: str = Field(
+        default="resumes", alias="FITMATCH_RESUME_STORAGE_BUCKET"
+    )
+    llm_provider: str = Field(default="openai", alias="FITMATCH_LLM_PROVIDER")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
