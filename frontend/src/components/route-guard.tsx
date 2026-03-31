@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 import { getToken, isOnboardingCompleted } from "@/lib/auth";
 
-const PROTECTED_ROUTES = new Set(["/onboarding", "/upload-resume", "/dashboard"]);
+const PROTECTED_ROUTES = new Set(["/onboarding", "/upload-resume", "/dashboard", "/matches"]);
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

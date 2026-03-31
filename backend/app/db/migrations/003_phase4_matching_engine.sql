@@ -1,0 +1,18 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
+ALTER TABLE resumes
+    ADD COLUMN IF NOT EXISTS embedding vector(1536),
+    ADD COLUMN IF NOT EXISTS embedding_model TEXT,
+    ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMPTZ;
+
+ALTER TABLE jobs
+    ADD COLUMN IF NOT EXISTS embedding vector(1536),
+    ADD COLUMN IF NOT EXISTS embedding_model TEXT,
+    ADD COLUMN IF NOT EXISTS embedding_updated_at TIMESTAMPTZ;
+
+ALTER TABLE matches
+    ADD COLUMN IF NOT EXISTS title_score NUMERIC(5,2),
+    ADD COLUMN IF NOT EXISTS skills_score NUMERIC(5,2),
+    ADD COLUMN IF NOT EXISTS experience_score NUMERIC(5,2),
+    ADD COLUMN IF NOT EXISTS education_score NUMERIC(5,2),
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();

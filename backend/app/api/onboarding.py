@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.core.auth import AuthUser, get_current_user
+from app.core.onboarding_store import get_user_preferences, save_user_preferences
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"])
-
-_user_preferences: dict[str, dict[str, object]] = {}
 
 
 class OnboardingRequest(BaseModel):
@@ -27,18 +26,9 @@ def save_onboarding(
         "work_type_preferences": payload.work_type_preferences,
         "completed": True,
     }
-    _user_preferences[user.email] = normalized
-    return normalized
+    return save_user_preferences(user.email, normalized)
 
 
 @router.get("", status_code=200)
 def get_onboarding(user: AuthUser = Depends(get_current_user)) -> dict[str, object]:
-    return _user_preferences.get(
-        user.email,
-        {
-            "target_roles": [],
-            "preferred_locations": [],
-            "work_type_preferences": [],
-            "completed": False,
-        },
-    )
+    return get_user_preferences(user.email)

@@ -1,4 +1,4 @@
-import type { OnboardingPayload, ResumeUploadResponse } from "@/lib/types";
+import type { MatchesResponse, OnboardingPayload, ResumeUploadResponse } from "@/lib/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api";
 
@@ -53,4 +53,17 @@ export async function uploadResume(token: string, file: File) {
   }
 
   return response.json() as Promise<ResumeUploadResponse>;
+}
+
+export async function listMatches(token: string, limit = 10) {
+  const response = await fetch(`${API_BASE_URL}/matches?limit=${limit}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to load matches");
+  }
+
+  return response.json() as Promise<MatchesResponse>;
 }

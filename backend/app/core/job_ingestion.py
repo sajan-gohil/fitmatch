@@ -7,6 +7,7 @@ import json
 from typing import Any
 from urllib.parse import urljoin
 
+from app.core.embeddings import generate_embedding
 
 @dataclass(frozen=True)
 class CanonicalJob:
@@ -253,6 +254,9 @@ class IngestionPipeline:
                 **asdict(job),
                 "posted_at": job.posted_at.isoformat() if job.posted_at else None,
                 "dedup_key": dedup_key,
+                "embedding": generate_embedding(
+                    " ".join([job.title, job.description, job.company_name, job.location or ""])
+                ),
             }
             inserted += 1
 
