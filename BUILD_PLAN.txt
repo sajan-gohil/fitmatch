@@ -1,0 +1,539 @@
+FitMatch
+Your AI-Powered Career Match Engine
+Complete MicroSaaS Build & Marketing Design Plan
+
+Product · Technology · Monetization · Growth
+
+Table of Contents
+
+1. Executive Summary & Product Vision
+2. LinkedIn API Reality Check
+3. Data Architecture & Job Scraping Strategy
+4. Core Product Features
+5. AI & Matching Engine Design
+6. Resume Intelligence Suite
+7. Notification & Personalization Engine
+8. Affiliate Revenue Layer — Coursera & Udemy
+9. Monetization: Pricing & Membership Tiers
+10. Tech Stack & Infrastructure
+11. MVP Scope & Build Roadmap
+12. Marketing Design Plan
+13. Growth & Acquisition Channels
+14. Key Metrics & KPIs
+15. Risks & Mitigations
+
+1. Executive Summary & Product Vision
+
+FitMatch is a lean MicroSaaS that scrapes job listings directly from company careers pages, parses uploaded resumes with AI, and delivers hyper-relevant, locality-aware job matches to paying subscribers. Unlike generic job boards, FitMatch does not ask users to hunt — it hunts for them, explains exactly why each role fits, surfaces skill gaps, and links them to the courses they need to close those gaps.
+
+Core Promise: Upload your resume once. Get matched jobs in your city, your field, and your level — every day. Know exactly what to fix to get hired.
+
+Problem Statement
+    • Job seekers waste hours manually searching boards that surface irrelevant roles.
+    • Most platforms send mass email blasts, not personalized notifications.
+    • No tool connects skill gaps visible in a resume to specific, affordable upskilling courses.
+    • Company careers pages (the freshest source of openings) are almost never aggregated in real time.
+
+Solution Summary
+Automated Scraping
+Crawls 500–5,000 company careers pages daily; extracts structured job data
+Resume Parsing
+AI extracts skills, titles, years of experience, education, location intent
+Match Engine
+Semantic scoring — not keyword — matches resume vectors to job vectors
+Locality Filter
+User sets target cities/remote; only relevant geography is served
+Insights Paywall
+Free tier sees matches; paid tier sees WHY they match and what to improve
+Smart Alerts
+Triggered push/email/SMS only when a high-scoring match appears — no spam
+Affiliate Upskilling
+Resume gap analysis links directly to Coursera / Udemy courses — earns commission
+
+2. LinkedIn API Reality Check
+
+⚠  LinkedIn's official Jobs & Company APIs require formal LinkedIn Partner Program approval. There is no free public tier for browsing or searching jobs or companies. Do NOT build your core data pipeline on LinkedIn's official API.
+
+Here is the realistic landscape as of early 2026:
+
+Option
+Cost
+Reliability
+Recommended?
+LinkedIn Official API
+Partner approval + fees
+High but inaccessible
+No — not for a startup
+Proxycurl / Lix API
+~$49–$99/mo starter
+High, real-time
+Yes — for enrichment only
+Apify LinkedIn Scraper
+$20–$50/mo
+Good, slight delay
+Yes — for job data only
+Direct Careers Page Scraping
+$0 beyond infra
+Your control
+Yes — PRIMARY strategy
+
+Recommendation: Build your PRIMARY pipeline by scraping company careers pages directly. Use Apify's LinkedIn scraper as a secondary supplement for broader market coverage. Do not pay for LinkedIn's official API at the MicroSaaS stage.
+
+3. Data Architecture & Job Scraping Strategy
+
+3.1 Careers Page Scraping Pipeline
+The architecture follows a crawl → parse → deduplicate → store → serve pattern:
+
+    1. Company Seed List: Begin with a curated list of 500–2,000 target employers. Source from: Crunchbase free tier, Fortune 500 list, AngelList/Wellfound, user-submitted company names, and Y Combinator alumni.
+    2. Crawler Layer: Use Playwright (headless browser) for JavaScript-heavy careers pages (Greenhouse, Lever, Workday, iCIMS). Use lightweight HTTP + BeautifulSoup for static pages. Run on a schedule: Tier-1 companies every 6 hours, Tier-2 every 24 hours.
+    3. ATS Detection: Auto-detect which Applicant Tracking System a company uses. Each ATS has a known URL pattern and DOM structure. Maintain a library of ATS-specific parsers.
+    4. Job Data Extraction: Extract title, description, location, salary range (if present), posted date, apply URL, seniority level, and employment type.
+    5. Deduplication: Hash job postings on (company_id + title + location + posted_date) to prevent duplicates.
+    6. Normalization: Standardize job titles (e.g., 'Sr. Software Engineer' → 'Senior Software Engineer'), location strings, and seniority labels using a lookup table.
+    7. Storage: PostgreSQL for structured job metadata. pgvector extension for embedding storage. Redis for job freshness cache. S3-compatible storage for raw HTML snapshots.
+
+3.2 ATS Integrations to Target First
+Greenhouse
+greenhouse.io/jobs — JSON API endpoint pattern, very scrapeable
+Lever
+jobs.lever.co — structured HTML, consistent selectors
+Workday
+company.wd1.myworkdayjobs.com — requires Playwright, known DOM
+iCIMS
+careers.icims.com — AJAX-heavy but consistent
+SmartRecruiters
+careers.smartrecruiters.com — JSON-based, easiest to parse
+BambooHR
+company.bamboohr.com/jobs — lightweight, scrapeable
+Ashby
+jobs.ashbyhq.com — modern ATS, simple JSON responses
+
+3.3 Supplementary Data Sources
+    • Remotive.io (remote jobs) — has a free public API
+    • The Muse API — free tier available for tech/startup jobs
+    • USAJobs.gov — free API for US federal roles
+    • Arbeitnow API — free, European job listings
+    • Apify LinkedIn Actor — $20–50/month for LinkedIn job data supplement
+
+4. Core Product Features
+
+4.1 Feature Map
+Feature Area
+Free Tier
+Paid Tier
+Job Matching
+See top 5 matches/week
+Unlimited matches, daily refresh
+Match Score
+Shown as % only
+Full breakdown by skill, title, experience
+Resume Upload
+1 resume
+Up to 5 resume versions
+Resume Analysis
+Basic skill extraction
+Deep gap analysis + improvement tips
+Job Description Fit
+Not available
+Detailed fit narrative per job
+Notifications
+Weekly digest email
+Smart alerts (push/email/SMS) on new high-matches
+Locality Filters
+1 city
+Unlimited cities + remote preference
+Salary Insights
+Not available
+Salary range benchmarking per role
+Course Recommendations
+Generic list
+AI-matched courses per skill gap
+Company Insights
+Not available
+Hiring velocity, tech stack, culture signals
+Application Tracker
+Not available
+Track status, notes, follow-ups
+
+4.2 User Onboarding Flow
+    8. Landing page with clear value proposition and email capture.
+    9. User uploads resume (PDF or DOCX) — parsed immediately with confirmation.
+    10. User selects: target role(s), preferred locations (up to 3 on free), work type (remote/hybrid/onsite).
+    11. System returns first match batch within 60 seconds — instant gratification moment.
+    12. Gate: To see WHY jobs match and how to improve their chances — prompt upgrade.
+    13. For free users, weekly digest continues. For paid users, smart alerts begin.
+
+5. AI & Matching Engine Design
+
+5.1 Embedding-Based Matching (Not Keyword)
+Keyword matching is the old way — it fails when a 'Data Engineer' applies to a 'Machine Learning Infrastructure' role that is essentially the same job. FitMatch uses semantic vector embeddings so that conceptually similar skills and titles match even without exact string overlap.
+
+Resume Embedding
+Parse resume → chunk into sections (skills, experience, education) → embed each chunk using text-embedding-3-small (OpenAI) or nomic-embed-text (open source). Store in pgvector.
+Job Embedding
+At scrape time, embed job title + description + requirements into a single vector. Store alongside job metadata.
+Match Score
+Cosine similarity between resume vector and job vector. Weighted: title match (30%), skills overlap (40%), experience level (20%), education (10%).
+Locality Layer
+Applied as a hard filter BEFORE semantic scoring. Only jobs in user's target geography enter the scoring pool.
+Ranking
+Top-N results returned sorted by weighted similarity score. Scores normalized to 0–100% for user-facing display.
+
+5.2 Gap Analysis Engine (Paid Feature)
+When a user views a specific job match, the Gap Analysis engine runs a comparison between:
+    • Skills listed in the job description (extracted and classified by category: technical, soft, domain)
+    • Skills present in the user's resume
+    • The delta — skills the job requires that the resume does NOT demonstrate
+
+The output is a structured 'fit report' delivered to the user, including:
+    • A narrative explanation: 'You match 74% of this role. Your Python and SQL skills are a strong fit. The role also asks for experience with Airflow and dbt which are not visible in your resume.'
+    • 3–5 specific, actionable suggestions for improving the resume for this role.
+    • Affiliate-linked course cards for each identified skill gap.
+
+5.3 Seniority & Title Normalization
+Resumes say 'Lead Developer.' Jobs say 'Staff Engineer.' Both mean senior individual contributor. A normalization layer maps free-text titles to a 5-level seniority taxonomy (Intern / Junior / Mid / Senior / Staff+) to prevent level mismatches in results.
+
+6. Resume Intelligence Suite
+
+6.1 Resume Parser
+Built on top of an LLM (GPT-4o-mini or Claude Haiku for cost efficiency). The parser extracts the following structured fields from any uploaded PDF or DOCX:
+    • Contact info (name, email, LinkedIn URL, location)
+    • Work experience: company, title, start/end dates, bullet points
+    • Education: institution, degree, field, graduation year
+    • Skills: grouped into technical, tools, languages, soft skills
+    • Certifications and courses
+    • Inferred seniority level and primary domain (e.g., backend engineering, product management, finance)
+
+6.2 Resume Scoring (Paid)
+A paid-only feature that scores the resume on five dimensions and provides a weighted overall score:
+Clarity & Formatting
+Is the resume ATS-readable? Are dates consistent? Is contact info clear?
+Quantification
+What % of bullet points include numbers, metrics, or measurable outcomes?
+Keyword Density
+How well does the resume align with the user's stated target role keywords?
+Experience Narrative
+Are career progression and role transitions logical and clearly communicated?
+Skills Coverage
+Does the skills section cover the most in-demand skills for the user's target role?
+
+6.3 Resume Rewrite Suggestions (Paid)
+For each weak resume bullet, the system generates a stronger AI-rewritten version using the STAR framework (Situation, Task, Action, Result). Users can accept, edit, or dismiss suggestions. This feature is a strong conversion driver — free users see a 'preview' of 1–2 suggestions; paid users get full access.
+
+7. Notification & Personalization Engine
+
+One of FitMatch's core differentiators is replacing the dreaded 'weekly job digest' with genuinely useful, trigger-based notifications.
+
+7.1 Notification Triggers
+High-Match Alert
+A new job is scraped that scores 80%+ against the user's resume vector. Sent within 2 hours of scraping.
+Company Watch Alert
+User marks a company as 'watching.' Any new opening at that company triggers instant notification.
+Salary Range Hit
+User sets a salary minimum. Alert fires when a matching role exceeds that threshold.
+Application Deadline
+If a job has a visible close date, a reminder is sent 3 days before.
+Resume Freshness Nudge
+If the user hasn't updated their resume in 90 days, a gentle nudge is sent.
+Skill Gap Opportunity
+A high-demand skill gap is detected across many jobs in the user's field — prompt to take a recommended course.
+
+7.2 Notification Channels
+    • Email (Resend or Postmark — transactional, not bulk)
+    • In-app notifications (web push via Web Push API or Firebase Cloud Messaging)
+    • SMS (Twilio — optional add-on or premium tier)
+    • Slack integration (power user add-on — receive job alerts in a personal Slack channel)
+
+7.3 Notification Preferences UI
+Users configure their notification settings granularly: which triggers fire, which channels receive them, time-of-day windows (e.g., 'only between 8am–6pm'), and minimum match score threshold. This prevents alert fatigue, which is the primary reason users churn from job alert services.
+
+8. Affiliate Revenue Layer — Coursera & Udemy
+
+This is not just a revenue feature — it directly enhances user value. A user who learns that their resume is missing 'dbt' skills and immediately sees a relevant Udemy course they can start today is far more likely to stay and convert.
+
+8.1 Affiliate Program Details
+Platform
+Commission
+Cookie Window
+Integration Method
+Coursera
+Up to 45% per enrollment
+30 days
+Impact.com affiliate portal; course search API
+Udemy
+15% per course sale
+7 days
+Udemy affiliate program (Rakuten); Udemy API for course catalog
+LinkedIn Learning
+$44 per signup
+30 days
+Impact.com; recommend for LinkedIn profile enhancement
+Pluralsight
+30% per subscription
+45 days
+ShareASale; strong for tech/engineering skill gaps
+DataCamp
+33% per subscription
+30 days
+Direct affiliate program; excellent for data roles
+
+8.2 Contextual Course Placement
+Courses must appear in context — not as a sidebar or banner. The three placement points are:
+    14. Gap Analysis Report: Immediately after a skill gap is identified, show 1–2 course cards for that specific skill. Example: 'Your resume doesn't show dbt experience. This role lists it as required. [Recommended: dbt Fundamentals on Coursera — free]'
+    15. Resume Score Report: Under each weak dimension, suggest a course. Example: Under 'Quantification': 'Want to write stronger, metric-driven bullet points? [Try: Resume Writing course on Udemy — $14.99]'
+    16. Dashboard Skill Trends Widget: Show top 3 skills appearing in new job postings in the user's field this month that are not on their resume. Link each to a course.
+
+8.3 Course Catalog Integration
+    • Use Udemy's REST API to fetch course details, ratings, prices, and enrollment count dynamically.
+    • Cache course metadata daily to avoid hitting API limits.
+    • For Coursera, use the Coursera Affiliates API (available through Impact.com) to pull course catalog data.
+    • Build a lightweight internal skill → course mapping table that can be manually curated and AI-supplemented.
+
+9. Monetization: Pricing & Membership Tiers
+
+9.1 Pricing Tiers
+
+FREEMIUM
+PRO
+LIFETIME
+Price
+Free
+$14/mo $99/yr $34/qtr
+$249 one-time
+Job Matches
+5/week
+Unlimited
+Unlimited
+Match Explanation
+Score only
+Full breakdown
+Full breakdown
+Resume Analysis
+Basic parse
+Deep + scoring
+Deep + scoring
+Gap Analysis
+No
+Yes
+Yes
+Smart Alerts
+Weekly digest
+Real-time triggers
+Real-time triggers
+Locality Filters
+1 city
+Unlimited
+Unlimited
+Resume Versions
+1
+5
+10
+Company Tracker
+No
+Yes
+Yes
+Course Recs
+Generic
+AI-matched
+AI-matched
+Salary Insights
+No
+Yes
+Yes
+App Tracker
+No
+Yes
+Yes
+API Access
+No
+No
+Beta access
+
+9.2 Revenue Projections (Conservative, Year 1)
+Monthly Users (EOY)
+Target: 3,000 free, 300 paid (10% conversion)
+Subscription Revenue
+300 users × $14/mo = $4,200/mo = ~$50K ARR
+Affiliate Revenue
+Estimated $500–$1,500/mo from course referrals at scale
+Lifetime Deals (Launch)
+50 LTDs × $249 = $12,450 one-time (use for launch capital)
+Year 1 Total (est.)
+$62K–$75K gross. Lean team: highly profitable.
+
+Launch Strategy: Offer 100 Lifetime Deal spots on AppSumo or a direct LTD campaign at $149 (early bird). This generates launch capital and a vocal early-adopter community.
+
+10. Tech Stack & Infrastructure
+
+Frontend
+Next.js 14 (App Router) + Tailwind CSS + shadcn/ui. Fast, SEO-friendly, easy to build with.
+Backend API
+FastAPI (Python) — chosen for AI/ML library ecosystem (LangChain, spaCy, scikit-learn).
+Database
+PostgreSQL + pgvector extension (for job and resume vector storage). Supabase for hosted PG + auth.
+Cache
+Redis (Upstash — serverless Redis). Used for job freshness, rate limiting, session caching.
+Auth
+Supabase Auth (magic link + Google OAuth). No password headaches.
+File Storage
+Supabase Storage or Cloudflare R2 (for resume file uploads, raw HTML snapshots).
+Scraping
+Playwright (Python) + Celery + Redis for distributed async scraping. Scrapy for static pages.
+AI / Embeddings
+OpenAI text-embedding-3-small (cheap, fast) or nomic-embed-text (self-hosted option). GPT-4o-mini for resume parsing and gap analysis narrative generation.
+Email
+Resend.com — developer-friendly transactional email with React Email templates.
+Push Notifications
+Firebase Cloud Messaging (free) for web push. Twilio for SMS (pay-as-you-go).
+Payments
+Stripe — subscriptions, one-time LTD purchases, billing portal.
+Hosting
+Railway.app or Render for backend + workers. Vercel for frontend. Very low cost for early scale.
+Monitoring
+Sentry (errors), PostHog (product analytics + feature flags), UptimeRobot (uptime).
+Infra Cost (early)
+~$80–$150/month total at 1,000 active users. Scales predictably.
+
+11. MVP Scope & Build Roadmap
+
+Phase 1 — MVP (Weeks 1–8)
+Goal: Working product that scrapes jobs, matches resumes, and collects first paid users.
+    • Week 1–2: Database schema, Supabase auth, resume upload + basic LLM parser
+    • Week 2–3: Scraper for 5 ATS types (Greenhouse, Lever, Workday, SmartRecruiters, Ashby) — target 100 companies
+    • Week 3–4: Embedding pipeline — resume vectorization + job vectorization + pgvector similarity search
+    • Week 4–5: Match results UI, locality filter, basic free tier UX
+    • Week 5–6: Stripe integration, Pro tier paywall, basic gap analysis report
+    • Week 6–7: Email notification system, weekly digest for free users
+    • Week 7–8: Landing page, onboarding flow, beta invite system
+
+Phase 2 — Growth (Weeks 9–16)
+Goal: Smart alerts, affiliate integration, and first 100 paid users.
+    • Real-time smart alerts (push + email triggers on new high-score matches)
+    • Affiliate course card integration (Udemy + Coursera)
+    • Resume scoring and rewrite suggestions UI
+    • Company watchlist and application tracker
+    • Expand scraper to 500 companies
+    • SEO landing pages for role + city combos (e.g., 'Data Engineer jobs in Austin')
+
+Phase 3 — Scale (Months 5–12)
+    • Salary benchmarking per role from scraped data
+    • Mobile-optimized PWA (Progressive Web App) — no App Store needed
+    • Slack integration for power users
+    • API access for Lifetime tier users
+    • Referral program — 1 free month for each paid referral
+    • Expand to 2,000+ companies scraped
+
+12. Marketing Design Plan
+
+12.1 Brand Identity
+Product Name
+FitMatch — simple, memorable, communicates the core value in one word
+Tagline
+"Find jobs that actually fit." — or — "Your resume. Matched to the right room."
+Visual Identity
+Clean, modern, trustworthy. Primary: deep navy (#1F4E79). Accent: sky blue (#2E75B6). Clean white backgrounds. No stock photos of people shaking hands.
+Tone of Voice
+Smart but not cold. Practical, direct, confident. Avoid buzzword-heavy SaaS speak.
+Logo Concept
+Abstract mark combining a resume document silhouette and a target/bullseye — suggesting precision matching.
+
+12.2 Landing Page Structure
+The landing page must do three things: make the value proposition obvious in 5 seconds, demonstrate the product with a live or animated demo, and convert visitors to either sign up or capture their email.
+
+    17. Hero Section: Bold headline ('Stop scrolling job boards. Let them come to you.'). Subhead: 'Upload your resume. We match you to jobs from 1,000+ company careers pages — in your city, in your field, at your level.' CTA: 'Try Free — Upload Your Resume'. Visual: animated demo of a resume being uploaded and matches appearing.
+    18. Problem Agitation: Three pain points with visuals. (1) 'You apply to 50 jobs. 3 were ever relevant.' (2) 'Job boards send you 200 emails. None are good.' (3) 'You don't know why you keep getting rejected.')
+    19. How It Works: 3-step visual. Upload Resume → Set Location & Role → Get Matched.
+    20. Feature Highlights: Side-by-side comparison of free vs. what you unlock with Pro. Lead with Gap Analysis — show a blurred example report.
+    21. Social Proof: Testimonials (even from beta users), '1,200+ resumes matched', 'Jobs from 800+ companies'.
+    22. Pricing Section: Simple 3-column (Free / Pro / Lifetime). Lifetime deal creates urgency.
+    23. FAQ: Answer the top 5 objections. How is this different from LinkedIn? Where do jobs come from? Is my resume data safe? How often do matches update?
+    24. Footer CTA: Email capture: 'Get your first job matches free — no credit card needed.'
+
+13. Growth & Acquisition Channels
+
+13.1 SEO — Programmatic Content
+The highest-ROI long-term channel. Create thousands of SEO landing pages targeting high-intent search queries:
+    • '[Job Title] jobs in [City]' — e.g., 'Product Manager jobs in Seattle'
+    • '[Company] is hiring [Role]' — e.g., 'Stripe is hiring engineers 2026'
+    • 'How to get a job at [Company]' — career guide pages that rank for navigational queries
+    • '[Skill] jobs near me' — captures skill-first searchers
+Each page is auto-generated from scraped job data. Target 10,000+ indexed pages within 6 months. This compounds over time with no ongoing cost.
+
+13.2 Content Marketing
+    • Resume teardown articles: 'We analyzed 500 resumes. Here's what separates the ones that get interviews.'
+    • Job market data posts: 'The 10 skills most in demand for Data Engineers right now (from 8,000 job listings)'
+    • Salary transparency pieces: 'What companies actually pay Product Managers in 2026 — from real job postings'
+    • Distribute via: personal LinkedIn posts, Reddit (r/cscareerquestions, r/datascience, r/jobs), Hacker News Show HN, IndieHackers
+
+13.3 Community & Reddit Marketing
+The target audience lives on Reddit and HN. Rules: be genuinely helpful first, never spam.
+    • Answer resume and job search questions in r/cscareerquestions, r/resumes, r/jobs, r/datascience — link to FitMatch only when directly relevant.
+    • Write a 'Show HN: I built a job matcher that scrapes careers pages instead of job boards' post on Hacker News launch day.
+    • Monthly posts on r/cscareerquestions: 'Here's what the job market looks like for [role] this month, based on 10,000 real job listings we scraped.'
+
+13.4 Product Hunt & AppSumo Launch
+    • Product Hunt: Coordinate a launch day with 50+ upvoters lined up from personal network and IndieHackers community. Aim for Top 5 Product of the Day.
+    • AppSumo: Submit for a lifetime deal campaign. Typical result: 200–2,000 LTD buyers, $30K–$300K revenue, massive email list growth. Choose AppSumo only after the product is stable.
+
+13.5 Partnership & Affiliate Channel
+    • Partner with career coaches, resume writers, and bootcamps to offer FitMatch as a recommended tool for their clients. Offer 30% referral revenue share.
+    • Reach out to university career centers — offer student discounts in exchange for being featured in career resources pages.
+    • Partner with coding bootcamps (General Assembly, Flatiron, Lambda School) — their graduates need jobs; FitMatch is a natural fit.
+
+13.6 Paid Acquisition (Phase 2 only)
+Do NOT spend on paid ads until organic channels are working and conversion rates are proven. When ready:
+    • Google Search Ads: Target high-intent keywords like 'job match tool', 'resume job matcher', 'find jobs by resume'
+    • Reddit Ads: Highly targeted to relevant subreddits. Often cheaper than Google for this demographic.
+    • LinkedIn Ads: Expensive but precise. Use only for B2B if you add a recruiter-facing tier later.
+
+14. Key Metrics & KPIs
+
+Activation Rate
+% of users who see at least 5 job matches within 24 hours of signup. Target: >70%.
+Free → Paid Conversion
+% of active free users who upgrade within 30 days. Target: 8–12%.
+Match Quality Score
+User-rated relevance of job matches (1–5 stars). Target: >4.0 average.
+Alert Click Rate
+% of smart alert emails/notifications that result in a job page click. Target: >25%.
+Affiliate CTR
+% of gap analysis views that result in a course link click. Target: >15%.
+Affiliate Conversion
+% of course clicks that result in a purchase. Target: 2–5% (platform average).
+Monthly Churn
+% of paid users who cancel per month. Target: <5%.
+Resume Upload → Match
+Time from resume upload to first match result. Target: <90 seconds.
+Scraper Freshness
+% of scraped jobs that are less than 48 hours old. Target: >90%.
+NPS Score
+Net Promoter Score via in-app survey at day 14. Target: >40.
+
+15. Risks & Mitigations
+
+Risk
+Likelihood
+Mitigation
+Companies block the scraper
+High
+Rotate user agents, respect robots.txt, use Playwright + proxies (Bright Data / Oxylabs). Prioritize ATS-based scraping (more stable than custom pages).
+OpenAI API cost escalates
+Medium
+Use GPT-4o-mini for most tasks. Evaluate open-source models (Llama 3.1, Mistral) for scraping/parsing tasks that don't need frontier models.
+Low free-to-paid conversion
+Medium
+Strengthen the paywall moment — make the free experience clearly incomplete. A/B test the upgrade prompt. Offer a 7-day free trial of Pro.
+Resume data privacy concerns
+Medium
+Clear privacy policy. Offer resume deletion. Store resumes encrypted. Do not share or sell resume data. Be explicit about AI processing.
+Established players copy the feature
+Low
+Speed and niche focus are the moat. Large job boards won't prioritize this UX. Build community and content moat early.
+Affiliate link income is low
+Low-Medium
+Affiliate revenue is supplementary, not core. Even $500/mo adds meaningfully to a lean SaaS. Optimize placement and targeting over time.
+
+
+
+FitMatch — MicroSaaS Build & Marketing Plan
+Built for a lean founder. Designed to grow.
