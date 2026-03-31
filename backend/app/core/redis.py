@@ -11,6 +11,9 @@ def get_redis_client() -> Redis:
 
 
 def close_redis_client() -> None:
+    if get_redis_client.cache_info().currsize == 0:
+        return
+
     client = get_redis_client()
     client.close()
     get_redis_client.cache_clear()
