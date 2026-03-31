@@ -1,0 +1,16 @@
+from functools import lru_cache
+
+from redis import Redis
+
+from app.core.settings import get_settings
+
+
+@lru_cache
+def get_redis_client() -> Redis:
+    return Redis.from_url(get_settings().redis_url, decode_responses=True)
+
+
+def close_redis_client() -> None:
+    client = get_redis_client()
+    client.close()
+    get_redis_client.cache_clear()
