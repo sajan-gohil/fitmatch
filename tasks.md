@@ -4,12 +4,12 @@ This task list includes only implementation work that a coding agent can execute
 
 ## Development Phases
 
-- [ ] **Phase 1 — Project foundation and local architecture**
-  - [ ] Initialize monorepo structure for `frontend` (Next.js) and `backend` (FastAPI).
-  - [ ] Add shared environment config templates (`.env.example`) and typed settings loaders.
-  - [ ] Set up PostgreSQL schema migrations for users, resumes, jobs, matches, notifications, subscriptions, and affiliate events.
-  - [ ] Add Redis wiring for queues/cache plus baseline background worker scaffold.
-  - [ ] Add basic observability hooks (structured logs + error reporting stubs) and health endpoints.
+- [x] **Phase 1 — Project foundation and local architecture**
+  - [x] Initialize monorepo structure for `frontend` (Next.js) and `backend` (FastAPI).
+  - [x] Add shared environment config templates (`.env.example`) and typed settings loaders.
+  - [x] Set up PostgreSQL schema migrations for users, resumes, jobs, matches, notifications, subscriptions, and affiliate events.
+  - [x] Add Redis wiring for queues/cache plus baseline background worker scaffold.
+  - [x] Add basic observability hooks (structured logs + error reporting stubs) and health endpoints.
 
 - [ ] **Phase 2 — Authentication, onboarding, and resume ingestion**
   - [ ] Implement Supabase auth flow (magic link + Google OAuth) with protected app routes.

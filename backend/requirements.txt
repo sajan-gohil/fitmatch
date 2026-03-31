@@ -1,0 +1,6 @@
+fastapi==0.115.12
+uvicorn[standard]==0.30.6
+pydantic-settings==2.6.1
+redis==5.2.1
+celery==5.4.0
+python-json-logger==2.0.7
