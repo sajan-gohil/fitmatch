@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.affiliate import router as affiliate_router
 from app.api.billing import router as billing_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
@@ -44,3 +45,4 @@ app.include_router(resume_intelligence_router, prefix=settings.api_prefix)
 app.include_router(jobs_router, prefix=settings.api_prefix)
 app.include_router(matches_router, prefix=settings.api_prefix)
 app.include_router(notifications_router, prefix=settings.api_prefix)
+app.include_router(affiliate_router, prefix=settings.api_prefix)

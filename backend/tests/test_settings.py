@@ -24,3 +24,5 @@ def test_settings_load_from_env(monkeypatch) -> None:
     assert settings.notification_digest_weekday == 0
     assert settings.notification_digest_hour_utc == 14
     assert settings.notification_default_min_salary == 0
+    assert settings.affiliate_catalog_sync_interval_hours == 24
+    assert settings.affiliate_stale_catalog_fallback_hours == 168

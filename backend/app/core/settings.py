@@ -68,6 +68,14 @@ class Settings(BaseSettings):
         default=0,
         alias="FITMATCH_NOTIFICATION_DEFAULT_MIN_SALARY",
     )
+    affiliate_catalog_sync_interval_hours: int = Field(
+        default=24,
+        alias="FITMATCH_AFFILIATE_CATALOG_SYNC_INTERVAL_HOURS",
+    )
+    affiliate_stale_catalog_fallback_hours: int = Field(
+        default=168,
+        alias="FITMATCH_AFFILIATE_STALE_CATALOG_FALLBACK_HOURS",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
