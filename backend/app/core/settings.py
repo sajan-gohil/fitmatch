@@ -48,6 +48,26 @@ class Settings(BaseSettings):
         alias="FITMATCH_STRIPE_LIFETIME_PRICE_ID",
     )
     app_url: str = Field(default="http://localhost:3000", alias="FITMATCH_APP_URL")
+    notification_high_match_threshold: float = Field(
+        default=80.0,
+        alias="FITMATCH_NOTIFICATION_HIGH_MATCH_THRESHOLD",
+    )
+    notification_resume_stale_days: int = Field(
+        default=90,
+        alias="FITMATCH_NOTIFICATION_RESUME_STALE_DAYS",
+    )
+    notification_digest_weekday: int = Field(
+        default=0,
+        alias="FITMATCH_NOTIFICATION_DIGEST_WEEKDAY",
+    )
+    notification_digest_hour_utc: int = Field(
+        default=14,
+        alias="FITMATCH_NOTIFICATION_DIGEST_HOUR_UTC",
+    )
+    notification_default_min_salary: int = Field(
+        default=0,
+        alias="FITMATCH_NOTIFICATION_DEFAULT_MIN_SALARY",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
