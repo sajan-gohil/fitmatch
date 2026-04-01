@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { listMatches } from "@/lib/api";
+import { BillingActions } from "@/components/billing-actions";
+import { getBillingEntitlements, listMatches } from "@/lib/api";
 import { getMatchFilters, getToken, saveMatchFilters } from "@/lib/auth";
 import type { Match } from "@/lib/types";
 
@@ -14,7 +15,8 @@ export default function MatchesPage() {
   const [locationFilter, setLocationFilter] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tier, setTier] = useState<"free" | "pro">("free");
+  const [tier, setTier] = useState<"free" | "pro" | "lifetime">("free");
+  const [plan, setPlan] = useState<"free" | "pro" | "lifetime">("free");
   const [enforcedLimit, setEnforcedLimit] = useState<number | null>(null);
 
   useEffect(() => {
@@ -40,6 +42,13 @@ export default function MatchesPage() {
           setError(message);
         })
         .finally(() => setLoading(false));
+
+      getBillingEntitlements(sessionToken)
+        .then((payload) => setPlan(payload.plan))
+        .catch((entitlementsError) => {
+          console.warn("Unable to load billing entitlements", entitlementsError);
+          setPlan("free");
+        });
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -76,9 +85,17 @@ export default function MatchesPage() {
       {loading ? <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">Loading matches...</p> : null}
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
       {tier === "free" && enforcedLimit ? (
-        <p className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Free tier currently shows up to {enforcedLimit} matches per refresh.
-        </p>
+        <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <p>Free tier currently shows up to {enforcedLimit} matches per refresh.</p>
+          <p className="mt-1">Detailed match explanations are available on paid plans.</p>
+          <BillingActions />
+        </div>
+      ) : null}
+      {plan !== "free" ? (
+        <div className="mt-4 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+          Current plan: <strong className="uppercase">{plan}</strong>
+          <BillingActions showUpgrade={false} />
+        </div>
       ) : null}
 
       {!loading && !error ? (

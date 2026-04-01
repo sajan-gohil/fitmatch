@@ -40,6 +40,14 @@ class Settings(BaseSettings):
         default=1440,
         alias="FITMATCH_SCRAPE_TIER2_INTERVAL_MINUTES",
     )
+    stripe_secret_key: str | None = Field(default=None, alias="FITMATCH_STRIPE_SECRET_KEY")
+    stripe_webhook_secret: str | None = Field(default=None, alias="FITMATCH_STRIPE_WEBHOOK_SECRET")
+    stripe_pro_price_id: str = Field(default="price_pro_monthly", alias="FITMATCH_STRIPE_PRO_PRICE_ID")
+    stripe_lifetime_price_id: str = Field(
+        default="price_lifetime_one_time",
+        alias="FITMATCH_STRIPE_LIFETIME_PRICE_ID",
+    )
+    app_url: str = Field(default="http://localhost:3000", alias="FITMATCH_APP_URL")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

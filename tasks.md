@@ -39,12 +39,12 @@ This task list includes only implementation work that a coding agent can execute
   - [ ] Add role/location filters and saved search state.
   - [ ] Implement first-match experience target (return initial batch quickly after onboarding).
 
-- [ ] **Phase 6 — Billing, tiers, and access control**
-  - [ ] Integrate Stripe subscriptions + one-time purchase flows and webhook handling.
-  - [ ] Implement plan entitlements (Free, Pro, Lifetime) in authorization middleware.
-  - [ ] Add upgrade/paywall UX at premium feature boundaries.
-  - [ ] Add billing portal/account management entry points.
-  - [ ] Add server-side enforcement tests for tier-gated API endpoints.
+- [x] **Phase 6 — Billing, tiers, and access control**
+  - [x] Integrate Stripe subscriptions + one-time purchase flows and webhook handling.
+  - [x] Implement plan entitlements (Free, Pro, Lifetime) in authorization middleware.
+  - [x] Add upgrade/paywall UX at premium feature boundaries.
+  - [x] Add billing portal/account management entry points.
+  - [x] Add server-side enforcement tests for tier-gated API endpoints.
 
 - [ ] **Phase 7 — Gap analysis and resume intelligence (paid features)**
   - [ ] Implement skill-gap extraction between job requirements and parsed resume skills.

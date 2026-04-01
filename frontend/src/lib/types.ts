@@ -37,8 +37,14 @@ export type Match = {
 export type MatchesResponse = {
   matches: Match[];
   total: number;
-  tier: "free" | "pro";
+  tier: "free" | "pro" | "lifetime";
   enforced_limit: number | null;
 };
 
 export type MatchDetailResponse = Match;
+
+export type BillingEntitlementsResponse = {
+  plan: "free" | "pro" | "lifetime";
+  status: string;
+  is_paid: boolean;
+};

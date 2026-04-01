@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
+
 from fastapi.testclient import TestClient
 import pytest
 
 from app.core.job_ingestion import IngestionPipeline, reset_ingestion_state
+from app.core.billing import apply_webhook_event
 from app.main import app
 
 client = TestClient(app)
@@ -162,10 +165,28 @@ def test_onboarding_enforces_free_tier_location_cap() -> None:
 
 
 def test_job_match_detail_returns_breakdown() -> None:
-    headers = _auth_headers("phase4-detail@example.com")
+    email = "phase4-detail@example.com"
+    headers = _auth_headers(email)
     _onboard(headers, locations=["Toronto"])
     _upload_resume(headers)
     _ingest_jobs()
+    apply_webhook_event(
+        json.dumps(
+            {
+                "type": "checkout.session.completed",
+                "data": {
+                    "object": {
+                        "id": "cs_test_detail_1",
+                        "customer_email": email,
+                        "customer": "cus_detail_1",
+                        "subscription": "sub_detail_1",
+                        "status": "active",
+                        "plan": "pro",
+                    }
+                },
+            }
+        ).encode("utf-8")
+    )
 
     response = client.get("/api/jobs/phase4-remote-1/match-detail", headers=headers)
     assert response.status_code == 200
@@ -173,3 +194,42 @@ def test_job_match_detail_returns_breakdown() -> None:
     assert payload["job"]["external_job_id"] == "phase4-remote-1"
     assert set(payload["breakdown"].keys()) == {"title", "skills", "experience", "education"}
     assert 0 <= payload["score"] <= 100
+
+
+def test_job_match_detail_is_tier_gated_for_free_users() -> None:
+    headers = _auth_headers("phase4-free-gated@example.com")
+    _onboard(headers, locations=["Toronto"])
+    _upload_resume(headers)
+    _ingest_jobs()
+
+    response = client.get("/api/jobs/phase4-remote-1/match-detail", headers=headers)
+    assert response.status_code == 402
+    assert "Upgrade to Pro or Lifetime" in response.json()["detail"]
+
+
+def test_job_match_detail_allows_paid_users_after_billing_webhook() -> None:
+    email = "phase4-paid@example.com"
+    headers = _auth_headers(email)
+    _onboard(headers, locations=["Toronto"])
+    _upload_resume(headers)
+    _ingest_jobs()
+
+    event_payload = {
+        "type": "checkout.session.completed",
+        "data": {
+            "object": {
+                "id": "cs_test_paid_1",
+                "customer_email": email,
+                "customer": "cus_paid_1",
+                "subscription": "sub_paid_1",
+                "status": "active",
+                "plan": "pro",
+            }
+        },
+    }
+    apply_webhook_event(json.dumps(event_payload).encode("utf-8"))
+
+    response = client.get("/api/jobs/phase4-remote-1/match-detail", headers=headers)
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["job"]["external_job_id"] == "phase4-remote-1"

@@ -7,6 +7,7 @@ from app.core.auth import AuthUser, get_current_user
 from app.core.job_ingestion import list_ingested_jobs, list_ingestion_trace
 from app.core.matching import compute_match_score
 from app.core.resume_store import get_resumes_for_user
+from app.core.tiers import can_access_match_detail, get_user_tier
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -52,6 +53,13 @@ def get_job(external_job_id: str, user: AuthUser = Depends(get_current_user)) ->
 
 @router.get("/{external_job_id}/match-detail", status_code=status.HTTP_200_OK)
 def get_job_match_detail(external_job_id: str, user: AuthUser = Depends(get_current_user)) -> dict[str, object]:
+    tier = get_user_tier(user.email)
+    if not can_access_match_detail(tier):
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="Upgrade to Pro or Lifetime to unlock match details.",
+        )
+
     resume_list = get_resumes_for_user(user.email)
     if not resume_list:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
