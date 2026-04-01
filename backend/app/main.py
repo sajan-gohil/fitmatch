@@ -6,8 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.affiliate import router as affiliate_router
 from app.api.billing import router as billing_router
+from app.api.growth import router as growth_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
+from app.api.lifetime_api import router as lifetime_api_router
 from app.api.matches import router as matches_router
 from app.api.notifications import router as notifications_router
 from app.api.onboarding import router as onboarding_router
@@ -46,3 +48,5 @@ app.include_router(jobs_router, prefix=settings.api_prefix)
 app.include_router(matches_router, prefix=settings.api_prefix)
 app.include_router(notifications_router, prefix=settings.api_prefix)
 app.include_router(affiliate_router, prefix=settings.api_prefix)
+app.include_router(growth_router, prefix=settings.api_prefix)
+app.include_router(lifetime_api_router, prefix=settings.api_prefix)

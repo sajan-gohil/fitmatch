@@ -26,3 +26,6 @@ def test_settings_load_from_env(monkeypatch) -> None:
     assert settings.notification_default_min_salary == 0
     assert settings.affiliate_catalog_sync_interval_hours == 24
     assert settings.affiliate_stale_catalog_fallback_hours == 168
+    assert settings.scrape_rate_limit_per_minute == 120
+    assert settings.scrape_queue_partitions == 4
+    assert settings.lifetime_api_daily_quota == 200

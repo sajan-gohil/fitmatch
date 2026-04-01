@@ -101,3 +101,51 @@ export type NotificationFeedResponse = {
   total: number;
   unread_count: number;
 };
+
+export type WatchlistItem = {
+  id: string;
+  company_name: string;
+  created_at: string;
+};
+
+export type WatchlistResponse = {
+  items: WatchlistItem[];
+  total: number;
+};
+
+export type ApplicationStatus = "saved" | "applied" | "interviewing" | "offer" | "rejected";
+
+export type ApplicationTrackerItem = {
+  id: string;
+  external_job_id: string;
+  company_name: string;
+  title: string;
+  status: ApplicationStatus;
+  applied_at: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ApplicationTrackerResponse = {
+  items: ApplicationTrackerItem[];
+  total: number;
+};
+
+export type SalaryBenchmarkResponse = {
+  role_filter: string | null;
+  location_filter: string | null;
+  count: number;
+  median_salary_min: number | null;
+  average_salary_min: number | null;
+  p25_salary_min: number | null;
+  p75_salary_min: number | null;
+  min_salary_min: number | null;
+  max_salary_min: number | null;
+  samples: Array<{
+    external_job_id: string;
+    title: string;
+    location: string;
+    salary_min: number;
+  }>;
+};

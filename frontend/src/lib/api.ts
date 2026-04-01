@@ -1,4 +1,6 @@
 import type {
+  ApplicationStatus,
+  ApplicationTrackerResponse,
   BillingEntitlementsResponse,
   MatchDetailResponse,
   MatchesResponse,
@@ -6,6 +8,8 @@ import type {
   OnboardingPayload,
   ResumeIntelligenceResponse,
   ResumeUploadResponse,
+  SalaryBenchmarkResponse,
+  WatchlistResponse,
 } from "@/lib/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api";
@@ -166,4 +170,102 @@ export async function markNotificationRead(token: string, notificationId: string
     throw new Error("Unable to update notification");
   }
   return response.json() as Promise<{ id: string; read: boolean }>;
+}
+
+export async function listWatchlist(token: string) {
+  const response = await fetch(`${API_BASE_URL}/growth/watchlist`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to load watchlist");
+  }
+  return response.json() as Promise<WatchlistResponse>;
+}
+
+export async function addWatchlistCompany(token: string, companyName: string) {
+  const response = await fetch(`${API_BASE_URL}/growth/watchlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildHeaders(token),
+    },
+    body: JSON.stringify({ company_name: companyName }),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to add watchlist company");
+  }
+  return response.json() as Promise<{ id: string; company_name: string; created_at: string }>;
+}
+
+export async function deleteWatchlistCompany(token: string, watchlistId: string) {
+  const response = await fetch(`${API_BASE_URL}/growth/watchlist/${encodeURIComponent(watchlistId)}`, {
+    method: "DELETE",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to delete watchlist company");
+  }
+  return response.json() as Promise<{ deleted: boolean }>;
+}
+
+export async function listApplications(token: string) {
+  const response = await fetch(`${API_BASE_URL}/growth/applications`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to load application tracker");
+  }
+  return response.json() as Promise<ApplicationTrackerResponse>;
+}
+
+export async function upsertApplication(
+  token: string,
+  payload: { external_job_id: string; status: ApplicationStatus; notes?: string; applied_at?: string },
+) {
+  const response = await fetch(`${API_BASE_URL}/growth/applications`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildHeaders(token),
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to save application entry");
+  }
+  return response.json() as Promise<{
+    id: string;
+    external_job_id: string;
+    status: ApplicationStatus;
+    notes: string;
+    applied_at: string | null;
+  }>;
+}
+
+export async function deleteApplication(token: string, applicationId: string) {
+  const response = await fetch(`${API_BASE_URL}/growth/applications/${encodeURIComponent(applicationId)}`, {
+    method: "DELETE",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to delete application entry");
+  }
+  return response.json() as Promise<{ deleted: boolean }>;
+}
+
+export async function getSalaryBenchmark(token: string, role?: string, location?: string) {
+  const params = new URLSearchParams();
+  if (role) params.set("role", role);
+  if (location) params.set("location", location);
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+  const response = await fetch(`${API_BASE_URL}/growth/salary-benchmark${suffix}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to load salary benchmark");
+  }
+  return response.json() as Promise<SalaryBenchmarkResponse>;
 }
