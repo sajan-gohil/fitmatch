@@ -10,6 +10,9 @@ export default function Home() {
         <p className="mt-4 text-zinc-600 dark:text-zinc-300">
           Start Phase 2 by signing in, completing onboarding, and uploading your resume.
         </p>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          Phase 10 includes growth modules like company watchlists, application tracking, salary benchmarks, and SEO landing pages.
+        </p>
         <div className="mt-8 flex gap-3">
           <Link
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
@@ -22,6 +25,12 @@ export default function Home() {
             href="/dashboard"
           >
             Go to Dashboard
+          </Link>
+          <Link
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            href="/jobs/data-engineer/austin"
+          >
+            SEO Example
           </Link>
         </div>
       </main>

@@ -67,12 +67,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Track impressions/clicks/conversions for affiliate analytics.
   - [x] Add internal admin config for manual + AI-assisted skill-course mappings.
 
-- [ ] **Phase 10 — Growth feature set and scale hardening**
-  - [ ] Implement company watchlist and application tracker modules.
-  - [ ] Add SEO programmatic landing page generation for role/location combinations.
-  - [ ] Add scraper scaling controls for larger company coverage (rate limiting + partitioned queues).
-  - [ ] Implement salary benchmarking from aggregated job data.
-  - [ ] Add API access layer for Lifetime tier (token auth + quota limits).
+- [x] **Phase 10 — Growth feature set and scale hardening**
+  - [x] Implement company watchlist and application tracker modules.
+  - [x] Add SEO programmatic landing page generation for role/location combinations.
+  - [x] Add scraper scaling controls for larger company coverage (rate limiting + partitioned queues).
+  - [x] Implement salary benchmarking from aggregated job data.
+  - [x] Add API access layer for Lifetime tier (token auth + quota limits).
 
 - [ ] **Phase 11 — Advanced platform extensions**
   - [ ] Implement Slack alert integration for opted-in users.

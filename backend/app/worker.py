@@ -7,6 +7,7 @@ from app.core.notifications import (
 )
 from app.core.affiliate import sync_catalog
 from app.core.job_ingestion import ingest_with_retry, scrape_schedule
+from app.core.phase10_growth import evaluate_scrape_rate_limit, queue_partition_for_source
 from app.core.resume_store import list_resume_owners
 from app.core.settings import get_settings
 
@@ -20,6 +21,15 @@ def ping() -> str:
 
 @celery_app.task(name="fitmatch.worker.scrape_source")
 def scrape_source(source_url: str, payload: dict[str, object]) -> dict[str, object]:
+    limiter = evaluate_scrape_rate_limit(source_url=source_url)
+    if not limiter.get("allowed"):
+        return {
+            "source_url": source_url,
+            "status": "rate_limited",
+            "partition": queue_partition_for_source(source_url),
+            "reason": limiter.get("reason"),
+            "remaining": limiter.get("remaining"),
+        }
     return ingest_with_retry(
         source_url=source_url,
         payload=payload,
@@ -29,7 +39,17 @@ def scrape_source(source_url: str, payload: dict[str, object]) -> dict[str, obje
 
 @celery_app.task(name="fitmatch.worker.scrape_schedule")
 def scrape_schedule_task() -> tuple[dict[str, str], ...]:
-    return scrape_schedule()
+    schedule = list(scrape_schedule())
+    enriched: list[dict[str, str]] = []
+    for item in schedule:
+        source_url = item.get("source_url", "")
+        enriched.append(
+            {
+                **item,
+                "queue_partition": str(queue_partition_for_source(source_url)),
+            }
+        )
+    return tuple(enriched)
 
 
 @celery_app.task(name="fitmatch.worker.refresh_matches_for_user")

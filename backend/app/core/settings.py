@@ -76,6 +76,18 @@ class Settings(BaseSettings):
         default=168,
         alias="FITMATCH_AFFILIATE_STALE_CATALOG_FALLBACK_HOURS",
     )
+    scrape_rate_limit_per_minute: int = Field(
+        default=120,
+        alias="FITMATCH_SCRAPE_RATE_LIMIT_PER_MINUTE",
+    )
+    scrape_queue_partitions: int = Field(
+        default=4,
+        alias="FITMATCH_SCRAPE_QUEUE_PARTITIONS",
+    )
+    lifetime_api_daily_quota: int = Field(
+        default=200,
+        alias="FITMATCH_LIFETIME_API_DAILY_QUOTA",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
