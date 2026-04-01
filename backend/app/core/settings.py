@@ -88,6 +88,22 @@ class Settings(BaseSettings):
         default=200,
         alias="FITMATCH_LIFETIME_API_DAILY_QUOTA",
     )
+    slack_webhook_url: str | None = Field(
+        default=None,
+        alias="FITMATCH_SLACK_WEBHOOK_URL",
+    )
+    phase11_feature_flags_enabled: bool = Field(
+        default=True,
+        alias="FITMATCH_PHASE11_FEATURE_FLAGS_ENABLED",
+    )
+    phase11_salary_cache_ttl_seconds: int = Field(
+        default=180,
+        alias="FITMATCH_PHASE11_SALARY_CACHE_TTL_SECONDS",
+    )
+    phase11_queue_batch_size: int = Field(
+        default=50,
+        alias="FITMATCH_PHASE11_QUEUE_BATCH_SIZE",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

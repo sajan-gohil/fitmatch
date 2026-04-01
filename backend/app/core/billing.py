@@ -11,6 +11,7 @@ from typing import Literal
 from fastapi import HTTPException, status
 
 from app.core.settings import get_settings
+from app.core.phase11_extensions import apply_referral_credit_for_paid_plan
 
 PlanName = Literal["free", "pro", "lifetime"]
 
@@ -121,6 +122,8 @@ def apply_webhook_event(payload: bytes) -> dict[str, object]:
         updated = SubscriptionState(plan="free", status="canceled", stripe_customer_id=current.stripe_customer_id)
 
     _subscriptions[email] = updated
+    if event_type in {"checkout.session.completed", "customer.subscription.updated"} and updated.plan in {"pro", "lifetime"}:
+        apply_referral_credit_for_paid_plan(email)
     return {
         "received": True,
         "event_type": event_type,

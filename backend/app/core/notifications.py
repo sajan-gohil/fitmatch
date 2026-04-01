@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from app.core.matching import list_top_matches_for_user
 from app.core.onboarding_store import get_user_preferences
+from app.core.phase11_extensions import queue_slack_alert
 from app.core.resume_store import get_resumes_for_user
 from app.core.settings import get_settings
 
@@ -294,6 +295,13 @@ def evaluate_notifications_for_user(user_email: str, *, now_utc: datetime | None
                     preference.channels,
                     {"external_job_id": job_id, "score": score},
                 )
+                queue_slack_alert(
+                    user_email,
+                    title=f"High match: {title}",
+                    body=f"{company} posted a new role matching {round(score, 2)}%.",
+                    score=score,
+                    metadata={"trigger": "high_match", "external_job_id": job_id},
+                )
                 _dispatched_event_keys.add(key)
                 queued += 1
 
@@ -309,6 +317,13 @@ def evaluate_notifications_for_user(user_email: str, *, now_utc: datetime | None
                         f"{company} posted {title}.",
                         preference.channels,
                         {"external_job_id": job_id, "company": company},
+                    )
+                    queue_slack_alert(
+                        user_email,
+                        title=f"Watchlist update: {company}",
+                        body=f"{company} posted {title}.",
+                        score=score,
+                        metadata={"trigger": "watchlist", "external_job_id": job_id},
                     )
                     _dispatched_event_keys.add(key)
                     queued += 1

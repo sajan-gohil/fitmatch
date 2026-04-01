@@ -13,6 +13,7 @@ from app.api.lifetime_api import router as lifetime_api_router
 from app.api.matches import router as matches_router
 from app.api.notifications import router as notifications_router
 from app.api.onboarding import router as onboarding_router
+from app.api.platform_extensions import router as platform_extensions_router
 from app.api.resume import router as resume_router
 from app.api.resume_intelligence import router as resume_intelligence_router
 from app.core.logging import configure_logging
@@ -50,3 +51,4 @@ app.include_router(notifications_router, prefix=settings.api_prefix)
 app.include_router(affiliate_router, prefix=settings.api_prefix)
 app.include_router(growth_router, prefix=settings.api_prefix)
 app.include_router(lifetime_api_router, prefix=settings.api_prefix)
+app.include_router(platform_extensions_router, prefix=settings.api_prefix)
