@@ -11,6 +11,20 @@ from app.core.settings import get_settings
 CourseProvider = Literal["udemy", "coursera"]
 MappingSource = Literal["manual", "ai_assisted"]
 AnalyticsEventType = Literal["impression", "click", "conversion"]
+RESUME_SCORING_DIMENSIONS: tuple[str, ...] = (
+    "quantification",
+    "keyword_density",
+    "skills_coverage",
+    "clarity_formatting",
+    "experience_narrative",
+)
+RESUME_DIMENSION_SKILL_MAP: dict[str, str] = {
+    "quantification": "quantification",
+    "keyword_density": "keyword optimization",
+    "skills_coverage": "skills mapping",
+    "clarity_formatting": "resume writing",
+    "experience_narrative": "storytelling",
+}
 
 
 class CourseCatalogProviderAdapter(Protocol):
@@ -391,19 +405,12 @@ def build_contextual_course_placements(
     gap_report_courses = recommend_courses_for_skills(missing, per_skill_limit=2)
     weak_dimensions = [
         key
-        for key in ("quantification", "keyword_density", "skills_coverage", "clarity_formatting", "experience_narrative")
+        for key in RESUME_SCORING_DIMENSIONS
         if float(resume_scoring.get(key, 100.0)) < 70.0
     ]
-    dimension_skills_map = {
-        "quantification": "quantification",
-        "keyword_density": "keyword optimization",
-        "skills_coverage": "skills mapping",
-        "clarity_formatting": "resume writing",
-        "experience_narrative": "storytelling",
-    }
     resume_score_courses: list[dict[str, Any]] = []
     for dimension in weak_dimensions:
-        mapped_skill = dimension_skills_map[dimension]
+        mapped_skill = RESUME_DIMENSION_SKILL_MAP[dimension]
         recs = recommend_courses_for_skills([mapped_skill], per_skill_limit=1)
         if not recs:
             continue

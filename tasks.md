@@ -60,12 +60,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Implement near-real-time alert dispatch via queue workers.
   - [x] Add in-app notification feed and read/unread state.
 
-- [ ] **Phase 9 — Affiliate course recommendation layer**
-  - [ ] Build skill-to-course recommendation service and placement slots in fit/gap reports.
-  - [ ] Implement provider adapter interface for external course catalogs.
-  - [ ] Add scheduled catalog sync + caching with stale-data fallback.
-  - [ ] Track impressions/clicks/conversions for affiliate analytics.
-  - [ ] Add internal admin config for manual + AI-assisted skill-course mappings.
+- [x] **Phase 9 — Affiliate course recommendation layer**
+  - [x] Build skill-to-course recommendation service and placement slots in fit/gap reports.
+  - [x] Implement provider adapter interface for external course catalogs.
+  - [x] Add scheduled catalog sync + caching with stale-data fallback.
+  - [x] Track impressions/clicks/conversions for affiliate analytics.
+  - [x] Add internal admin config for manual + AI-assisted skill-course mappings.
 
 - [ ] **Phase 10 — Growth feature set and scale hardening**
   - [ ] Implement company watchlist and application tracker modules.
