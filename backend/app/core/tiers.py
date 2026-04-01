@@ -28,3 +28,7 @@ def get_location_cap_for_tier(tier: Tier) -> int | None:
 
 def can_access_match_detail(tier: Tier) -> bool:
     return tier in {"pro", "lifetime"}
+
+
+def can_access_phase7_full_output(tier: Tier) -> bool:
+    return tier in {"pro", "lifetime"}

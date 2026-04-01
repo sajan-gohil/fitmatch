@@ -10,6 +10,7 @@ from app.api.jobs import router as jobs_router
 from app.api.matches import router as matches_router
 from app.api.onboarding import router as onboarding_router
 from app.api.resume import router as resume_router
+from app.api.resume_intelligence import router as resume_intelligence_router
 from app.core.logging import configure_logging
 from app.core.redis import close_redis_client
 from app.core.settings import get_settings
@@ -38,5 +39,6 @@ app.include_router(auth_router, prefix=settings.api_prefix)
 app.include_router(billing_router, prefix=settings.api_prefix)
 app.include_router(onboarding_router, prefix=settings.api_prefix)
 app.include_router(resume_router, prefix=settings.api_prefix)
+app.include_router(resume_intelligence_router, prefix=settings.api_prefix)
 app.include_router(jobs_router, prefix=settings.api_prefix)
 app.include_router(matches_router, prefix=settings.api_prefix)
