@@ -128,3 +128,48 @@ def test_matches_sorted_by_score_descending() -> None:
 
     scores = [item["score"] for item in payload["matches"]]
     assert scores == sorted(scores, reverse=True)
+
+
+def test_matches_enforces_free_tier_cap() -> None:
+    headers = _auth_headers("phase4-cap@example.com")
+    _onboard(headers, locations=["Toronto"])
+    _upload_resume(headers)
+    _ingest_jobs()
+
+    response = client.get("/api/matches?limit=50", headers=headers)
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert payload["tier"] == "free"
+    assert payload["enforced_limit"] == 5
+    assert payload["total"] <= 5
+
+
+def test_onboarding_enforces_free_tier_location_cap() -> None:
+    headers = _auth_headers("phase4-location-cap@example.com")
+    response = client.post(
+        "/api/onboarding",
+        headers=headers,
+        json={
+            "target_roles": ["Software Engineer"],
+            "preferred_locations": ["Toronto", "Remote", "Vancouver"],
+            "work_type_preferences": ["remote"],
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["preferred_locations"] == ["Toronto", "Remote"]
+
+
+def test_job_match_detail_returns_breakdown() -> None:
+    headers = _auth_headers("phase4-detail@example.com")
+    _onboard(headers, locations=["Toronto"])
+    _upload_resume(headers)
+    _ingest_jobs()
+
+    response = client.get("/api/jobs/phase4-remote-1/match-detail", headers=headers)
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["job"]["external_job_id"] == "phase4-remote-1"
+    assert set(payload["breakdown"].keys()) == {"title", "skills", "experience", "education"}
+    assert 0 <= payload["score"] <= 100

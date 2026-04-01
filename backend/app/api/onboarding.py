@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.core.auth import AuthUser, get_current_user
 from app.core.onboarding_store import get_user_preferences, save_user_preferences
+from app.core.tiers import get_location_cap_for_tier, get_user_tier
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
@@ -20,9 +21,15 @@ def save_onboarding(
     payload: OnboardingRequest,
     user: AuthUser = Depends(get_current_user),
 ) -> dict[str, object]:
+    tier = get_user_tier(user.email)
+    location_cap = get_location_cap_for_tier(tier)
+    preferred_locations = payload.preferred_locations
+    if location_cap is not None:
+        preferred_locations = preferred_locations[:location_cap]
+
     normalized = {
         "target_roles": payload.target_roles,
-        "preferred_locations": payload.preferred_locations,
+        "preferred_locations": preferred_locations,
         "work_type_preferences": payload.work_type_preferences,
         "completed": True,
     }

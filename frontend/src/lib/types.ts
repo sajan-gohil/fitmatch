@@ -37,4 +37,8 @@ export type Match = {
 export type MatchesResponse = {
   matches: Match[];
   total: number;
+  tier: "free" | "pro";
+  enforced_limit: number | null;
 };
+
+export type MatchDetailResponse = Match;
