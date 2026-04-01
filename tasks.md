@@ -53,12 +53,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Add AI rewrite suggestions for weak bullets with accept/edit/dismiss state.
   - [x] Add free preview vs full paid output gating logic.
 
-- [ ] **Phase 8 — Notifications and personalization engine**
-  - [ ] Implement notification rules engine (high-match, watchlist, salary threshold, freshness, deadlines).
-  - [ ] Add user notification preferences model/API (channels, windows, threshold).
-  - [ ] Build weekly digest job and transactional email templates.
-  - [ ] Implement near-real-time alert dispatch via queue workers.
-  - [ ] Add in-app notification feed and read/unread state.
+- [x] **Phase 8 — Notifications and personalization engine**
+  - [x] Implement notification rules engine (high-match, watchlist, salary threshold, freshness, deadlines).
+  - [x] Add user notification preferences model/API (channels, windows, threshold).
+  - [x] Build weekly digest job and transactional email templates.
+  - [x] Implement near-real-time alert dispatch via queue workers.
+  - [x] Add in-app notification feed and read/unread state.
 
 - [ ] **Phase 9 — Affiliate course recommendation layer**
   - [ ] Build skill-to-course recommendation service and placement slots in fit/gap reports.

@@ -8,6 +8,7 @@ from app.api.billing import router as billing_router
 from app.api.health import router as health_router
 from app.api.jobs import router as jobs_router
 from app.api.matches import router as matches_router
+from app.api.notifications import router as notifications_router
 from app.api.onboarding import router as onboarding_router
 from app.api.resume import router as resume_router
 from app.api.resume_intelligence import router as resume_intelligence_router
@@ -42,3 +43,4 @@ app.include_router(resume_router, prefix=settings.api_prefix)
 app.include_router(resume_intelligence_router, prefix=settings.api_prefix)
 app.include_router(jobs_router, prefix=settings.api_prefix)
 app.include_router(matches_router, prefix=settings.api_prefix)
+app.include_router(notifications_router, prefix=settings.api_prefix)
