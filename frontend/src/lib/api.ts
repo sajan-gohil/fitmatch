@@ -3,6 +3,7 @@ import type {
   MatchDetailResponse,
   MatchesResponse,
   OnboardingPayload,
+  ResumeIntelligenceResponse,
   ResumeUploadResponse,
 } from "@/lib/types";
 
@@ -88,6 +89,19 @@ export async function getMatchDetail(token: string, externalJobId: string) {
   }
 
   return response.json() as Promise<MatchDetailResponse>;
+}
+
+export async function getResumeIntelligence(token: string, externalJobId: string) {
+  const response = await fetch(`${API_BASE_URL}/resume-intelligence/jobs/${encodeURIComponent(externalJobId)}/analysis`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to load resume intelligence");
+  }
+
+  return response.json() as Promise<ResumeIntelligenceResponse>;
 }
 
 export async function getBillingEntitlements(token: string) {

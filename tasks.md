@@ -46,12 +46,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Add billing portal/account management entry points.
   - [x] Add server-side enforcement tests for tier-gated API endpoints.
 
-- [ ] **Phase 7 — Gap analysis and resume intelligence (paid features)**
-  - [ ] Implement skill-gap extraction between job requirements and parsed resume skills.
-  - [ ] Generate structured fit reports with actionable suggestions per match.
-  - [ ] Implement resume scoring across defined quality dimensions.
-  - [ ] Add AI rewrite suggestions for weak bullets with accept/edit/dismiss state.
-  - [ ] Add free preview vs full paid output gating logic.
+- [x] **Phase 7 — Gap analysis and resume intelligence (paid features)**
+  - [x] Implement skill-gap extraction between job requirements and parsed resume skills.
+  - [x] Generate structured fit reports with actionable suggestions per match.
+  - [x] Implement resume scoring across defined quality dimensions.
+  - [x] Add AI rewrite suggestions for weak bullets with accept/edit/dismiss state.
+  - [x] Add free preview vs full paid output gating logic.
 
 - [ ] **Phase 8 — Notifications and personalization engine**
   - [ ] Implement notification rules engine (high-match, watchlist, salary threshold, freshness, deadlines).

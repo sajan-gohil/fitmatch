@@ -1,0 +1,4 @@
+ALTER TABLE matches
+    ADD COLUMN IF NOT EXISTS resume_quality_score NUMERIC(5,2),
+    ADD COLUMN IF NOT EXISTS fit_report JSONB,
+    ADD COLUMN IF NOT EXISTS skill_gap JSONB;
