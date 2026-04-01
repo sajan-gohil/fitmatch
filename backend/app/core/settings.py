@@ -29,6 +29,8 @@ class Settings(BaseSettings):
         default="resumes", alias="FITMATCH_RESUME_STORAGE_BUCKET"
     )
     llm_provider: str = Field(default="openai", alias="FITMATCH_LLM_PROVIDER")
+    embedding_model: str = Field(default="text-embedding-3-small", alias="FITMATCH_EMBEDDING_MODEL")
+    embedding_dimensions: int = Field(default=1536, alias="FITMATCH_EMBEDDING_DIMENSIONS")
     scrape_retry_attempts: int = Field(default=3, alias="FITMATCH_SCRAPE_RETRY_ATTEMPTS")
     scrape_tier1_interval_minutes: int = Field(
         default=360,

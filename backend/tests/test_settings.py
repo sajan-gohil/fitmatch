@@ -14,3 +14,5 @@ def test_settings_load_from_env(monkeypatch) -> None:
     assert settings.auth_provider == "supabase"
     assert settings.resume_storage_bucket == "resumes"
     assert settings.llm_provider == "openai"
+    assert settings.embedding_model == "text-embedding-3-small"
+    assert settings.embedding_dimensions == 1536

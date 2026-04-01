@@ -5,7 +5,10 @@ import uuid
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.core.auth import AuthUser, get_current_user
+from app.core.embeddings import generate_embedding
 from app.core.resume_parser import parse_resume
+from app.core.resume_store import get_resume as get_stored_resume
+from app.core.resume_store import save_resume
 
 router = APIRouter(prefix="/resume", tags=["resume"])
 
@@ -16,9 +19,6 @@ ALLOWED_CONTENT_TYPES = {
     "application/msword",
 }
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc"}
-
-_resumes: dict[str, dict[str, object]] = {}
-
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_resume(
@@ -46,14 +46,22 @@ async def upload_resume(
         "file_size": len(data),
         "content_type": file.content_type,
         "parsed": parsed,
+        "embedding": generate_embedding(
+            " ".join(
+                [
+                    str(parsed.get("target_role", "")),
+                    " ".join(parsed.get("skills", [])),
+                    str(parsed.get("summary", "")),
+                ]
+            )
+        ),
     }
-    _resumes[resume_id] = document
-    return document
+    return save_resume(resume_id, document)
 
 
 @router.get("/{resume_id}", status_code=200)
 def get_resume(resume_id: str, user: AuthUser = Depends(get_current_user)) -> dict[str, object]:
-    resume = _resumes.get(resume_id)
+    resume = get_stored_resume(resume_id)
     if resume is None or resume.get("owner") != user.email:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
 

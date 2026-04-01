@@ -25,12 +25,12 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Add scrape scheduling, retry/backoff, and dead-letter handling.
   - [x] Persist raw snapshots/metadata needed for traceability and re-processing.
 
-- [ ] **Phase 4 — Embeddings and semantic matching engine**
-  - [ ] Add resume/job embedding generation pipeline and pgvector persistence.
-  - [ ] Implement weighted scoring (title, skills, experience, education) with 0–100 normalization.
-  - [ ] Enforce locality filtering before scoring and ranking.
-  - [ ] Build match refresh jobs and incremental re-scoring logic.
-  - [ ] Expose backend APIs for top-N ranked matches per user profile/resume.
+- [x] **Phase 4 — Embeddings and semantic matching engine**
+  - [x] Add resume/job embedding generation pipeline and pgvector persistence.
+  - [x] Implement weighted scoring (title, skills, experience, education) with 0–100 normalization.
+  - [x] Enforce locality filtering before scoring and ranking.
+  - [x] Build match refresh jobs and incremental re-scoring logic.
+  - [x] Expose backend APIs for top-N ranked matches per user profile/resume.
 
 - [ ] **Phase 5 — Core user-facing matching experience**
   - [ ] Build dashboard results UI showing ranked jobs and match percentages.

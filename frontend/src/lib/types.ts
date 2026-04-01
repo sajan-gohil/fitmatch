@@ -22,3 +22,19 @@ export type ResumeUploadResponse = {
   content_type: string;
   parsed: ParsedResume;
 };
+
+export type Match = {
+  job: Record<string, unknown>;
+  score: number;
+  breakdown: {
+    title: number;
+    skills: number;
+    experience: number;
+    education: number;
+  };
+};
+
+export type MatchesResponse = {
+  matches: Match[];
+  total: number;
+};
