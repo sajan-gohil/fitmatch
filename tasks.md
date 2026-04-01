@@ -74,9 +74,9 @@ This task list includes only implementation work that a coding agent can execute
   - [x] Implement salary benchmarking from aggregated job data.
   - [x] Add API access layer for Lifetime tier (token auth + quota limits).
 
-- [ ] **Phase 11 — Advanced platform extensions**
-  - [ ] Implement Slack alert integration for opted-in users.
-  - [ ] Add referral tracking and reward-credit logic.
-  - [ ] Implement PWA enhancements for mobile-first experience (installable + offline shell).
-  - [ ] Add feature flags for staged rollouts of advanced modules.
-  - [ ] Add performance and reliability improvements (query tuning, caching strategy updates, queue throughput tuning).
+- [x] **Phase 11 — Advanced platform extensions**
+  - [x] Implement Slack alert integration for opted-in users.
+  - [x] Add referral tracking and reward-credit logic.
+  - [x] Implement PWA enhancements for mobile-first experience (installable + offline shell).
+  - [x] Add feature flags for staged rollouts of advanced modules.
+  - [x] Add performance and reliability improvements (query tuning, caching strategy updates, queue throughput tuning).
