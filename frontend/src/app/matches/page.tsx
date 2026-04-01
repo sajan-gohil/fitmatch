@@ -125,7 +125,11 @@ export default function MatchesPage() {
               </p>
             </li>
           ))}
-          {filteredMatches.length === 0 ? <li className="text-sm text-zinc-600 dark:text-zinc-300">No matches for current filters.</li> : null}
+          {filteredMatches.length === 0 ? (
+            <li className="text-sm text-zinc-600 dark:text-zinc-300">
+              {matches.length === 0 ? "No matches yet." : "No matches for current filters."}
+            </li>
+          ) : null}
           </ul>
         </>
       ) : null}

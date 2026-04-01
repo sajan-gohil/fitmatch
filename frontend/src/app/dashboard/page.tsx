@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { listMatches } from "@/lib/api";
 import { getToken, isOnboardingCompleted } from "@/lib/auth";
 
+const FIRST_BATCH_LIMIT = 3;
+
 export default function DashboardPage() {
   const [hydrated, setHydrated] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -29,7 +31,7 @@ export default function DashboardPage() {
     if (!token || !onboarded) {
       return;
     }
-    listMatches(token, 3)
+    listMatches(token, FIRST_BATCH_LIMIT)
       .then((payload) => setFirstBatchCount(payload.total))
       .catch(() => setFirstBatchCount(0));
   }, [hydrated, onboarded]);

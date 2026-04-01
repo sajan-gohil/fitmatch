@@ -55,10 +55,11 @@ def get_job_match_detail(external_job_id: str, user: AuthUser = Depends(get_curr
     resume_list = get_resumes_for_user(user.email)
     if not resume_list:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found")
+    latest_resume = resume_list[-1]
 
     for job in list_ingested_jobs():
         if job.get("external_job_id") == external_job_id:
-            score = compute_match_score(resume_list[-1], job)
+            score = compute_match_score(latest_resume, job)
             return {
                 "job": job,
                 "score": score.score,
