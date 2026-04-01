@@ -184,6 +184,7 @@ def _collect_catalog(skills: list[str]) -> list[dict[str, Any]]:
 
 
 def sync_catalog(skills: list[str] | None = None, *, force: bool = False) -> dict[str, Any]:
+    global _catalog_last_sync_at
     _seed_defaults()
     target_skills = skills if isinstance(skills, list) else []
     with _affiliate_lock:
@@ -201,7 +202,6 @@ def sync_catalog(skills: list[str] | None = None, *, force: bool = False) -> dic
             _catalog_cache.extend(fresh)
             _last_successful_catalog.clear()
             _last_successful_catalog.extend(fresh)
-            global _catalog_last_sync_at
             _catalog_last_sync_at = datetime.now(UTC)
             return {
                 "synced": True,
@@ -212,6 +212,13 @@ def sync_catalog(skills: list[str] | None = None, *, force: bool = False) -> dic
             }
         except Exception:
             if _last_successful_catalog:
+                fallback_hours = max(1, get_settings().affiliate_stale_catalog_fallback_hours)
+                is_within_fallback_window = (
+                    _catalog_last_sync_at is not None
+                    and (datetime.now(UTC) - _catalog_last_sync_at) <= timedelta(hours=fallback_hours)
+                )
+                if not is_within_fallback_window:
+                    raise
                 _catalog_cache.clear()
                 _catalog_cache.extend(_last_successful_catalog)
                 return {
@@ -270,12 +277,13 @@ def upsert_skill_course_mapping(payload: dict[str, Any]) -> dict[str, Any]:
     active = bool(payload.get("active", True))
     if not skill or provider not in {"udemy", "coursera"} or not external_course_id:
         raise ValueError("Invalid mapping payload")
+    provider_typed: CourseProvider = "udemy" if provider == "udemy" else "coursera"
     entries = _skill_course_mappings.setdefault(skill, [])
     for index, entry in enumerate(entries):
         if entry.provider == provider and entry.external_course_id == external_course_id:
             entries[index] = SkillCourseMapping(
                 skill=skill,
-                provider=provider,  # type: ignore[arg-type]
+                provider=provider_typed,
                 external_course_id=external_course_id,
                 source=source,
                 rationale=rationale,
@@ -292,7 +300,7 @@ def upsert_skill_course_mapping(payload: dict[str, Any]) -> dict[str, Any]:
     entries.append(
         SkillCourseMapping(
             skill=skill,
-            provider=provider,  # type: ignore[arg-type]
+            provider=provider_typed,
             external_course_id=external_course_id,
             source=source,
             rationale=rationale,
