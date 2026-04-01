@@ -22,7 +22,7 @@ def ping() -> str:
 @celery_app.task(name="fitmatch.worker.scrape_source")
 def scrape_source(source_url: str, payload: dict[str, object]) -> dict[str, object]:
     limiter = evaluate_scrape_rate_limit(source_url=source_url)
-    if not bool(limiter.get("allowed")):
+    if not limiter.get("allowed"):
         return {
             "source_url": source_url,
             "status": "rate_limited",

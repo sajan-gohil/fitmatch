@@ -5,11 +5,24 @@ type Params = {
   city: string;
 };
 
+const KNOWN_TERMS: Record<string, string> = {
+  sql: "SQL",
+  ios: "iOS",
+  ux: "UX",
+  ui: "UI",
+};
+
 function prettySlug(value: string): string {
   return value
     .split("-")
     .filter(Boolean)
-    .map((item) => (item.length <= 3 ? item.toUpperCase() : item[0].toUpperCase() + item.slice(1)))
+    .map((item) => {
+      const lower = item.toLowerCase();
+      if (KNOWN_TERMS[lower]) {
+        return KNOWN_TERMS[lower];
+      }
+      return item.length <= 3 ? item.toUpperCase() : item[0].toUpperCase() + item.slice(1);
+    })
     .join(" ");
 }
 

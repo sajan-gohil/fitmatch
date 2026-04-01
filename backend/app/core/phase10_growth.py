@@ -10,6 +10,7 @@ from app.core.job_ingestion import list_ingested_jobs
 from app.core.settings import get_settings
 
 ApplicationStatus = Literal["saved", "applied", "interviewing", "offer", "rejected"]
+STATUSES_WITH_AUTO_APPLIED_DATE: tuple[ApplicationStatus, ...] = ("applied", "interviewing", "offer")
 
 
 @dataclass(frozen=True)
@@ -146,7 +147,7 @@ def upsert_application_entry(
         date.fromisoformat(applied_at.strip())
         applied_date = applied_at.strip()
     else:
-        applied_date = datetime.now(UTC).date().isoformat() if status_normalized in {"applied", "interviewing", "offer"} else None
+        applied_date = None
 
     with _growth_lock:
         rows = _applications.setdefault(user_email, [])
@@ -154,6 +155,9 @@ def upsert_application_entry(
         for index, item in enumerate(rows):
             if item.external_job_id != external_job_id:
                 continue
+            next_applied_at = item.applied_at
+            if applied_date is not None:
+                next_applied_at = applied_date
             updated = ApplicationEntry(
                 id=item.id,
                 user_email=user_email,
@@ -161,7 +165,7 @@ def upsert_application_entry(
                 company_name=str(job.get("company_name") or item.company_name),
                 title=str(job.get("title") or item.title),
                 status=status_normalized,
-                applied_at=applied_date,
+                applied_at=next_applied_at,
                 notes=notes.strip(),
                 created_at=item.created_at,
                 updated_at=now,
@@ -185,7 +189,15 @@ def upsert_application_entry(
             company_name=str(job.get("company_name") or "Unknown company"),
             title=str(job.get("title") or "Unknown role"),
             status=status_normalized,
-            applied_at=applied_date,
+            applied_at=(
+                applied_date
+                if applied_date is not None
+                else (
+                    datetime.now(UTC).date().isoformat()
+                    if status_normalized in STATUSES_WITH_AUTO_APPLIED_DATE
+                    else None
+                )
+            ),
             notes=notes.strip(),
             created_at=now,
             updated_at=now,
@@ -253,7 +265,8 @@ def salary_benchmark_by_role_location(role: str | None = None, location: str | N
         }
 
     def _percentile(percent: float) -> int:
-        index = int((count - 1) * percent)
+        rank = max(1, int((percent * count) + (0 if (percent * count).is_integer() else 1)))
+        index = min(count - 1, rank - 1)
         return values[index]
 
     avg = round(sum(values) / count)
@@ -278,10 +291,10 @@ def get_scraper_scaling_controls() -> dict[str, int]:
 
 
 def evaluate_scrape_rate_limit(*, source_url: str, now_utc: datetime | None = None) -> dict[str, object]:
-    del source_url
+    source_key = source_url.strip().lower() or "unknown"
     controls = get_scraper_scaling_controls()
     now = now_utc or datetime.now(UTC)
-    minute_bucket = now.strftime("%Y-%m-%dT%H:%M")
+    minute_bucket = f"{now.strftime('%Y-%m-%dT%H:%M')}|{source_key}"
     limit = int(controls["rate_limit_per_minute"])
 
     with _growth_lock:

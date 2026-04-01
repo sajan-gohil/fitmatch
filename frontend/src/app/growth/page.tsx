@@ -17,27 +17,24 @@ import type { ApplicationStatus, ApplicationTrackerItem, SalaryBenchmarkResponse
 const APPLICATION_STATUSES: ApplicationStatus[] = ["saved", "applied", "interviewing", "offer", "rejected"];
 
 export default function GrowthPage() {
-  const [token, setToken] = useState<string | null>(null);
-  const [companyInput, setCompanyInput] = useState("FitMatch");
+  const [token] = useState<string | null>(() => getToken());
+  const [companyInput, setCompanyInput] = useState("");
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [applications, setApplications] = useState<ApplicationTrackerItem[]>([]);
   const [jobIdInput, setJobIdInput] = useState("");
   const [jobStatusInput, setJobStatusInput] = useState<ApplicationStatus>("saved");
   const [notesInput, setNotesInput] = useState("");
-  const [benchmarkRole, setBenchmarkRole] = useState("Data Engineer");
-  const [benchmarkLocation, setBenchmarkLocation] = useState("Austin");
+  const [benchmarkRole, setBenchmarkRole] = useState("");
+  const [benchmarkLocation, setBenchmarkLocation] = useState("");
   const [benchmark, setBenchmark] = useState<SalaryBenchmarkResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(token));
 
   useEffect(() => {
-    const currentToken = getToken();
-    setToken(currentToken);
-    if (!currentToken) {
-      setLoading(false);
+    if (!token) {
       return;
     }
-    Promise.all([listWatchlist(currentToken), listApplications(currentToken), getSalaryBenchmark(currentToken)])
+    Promise.all([listWatchlist(token), listApplications(token), getSalaryBenchmark(token)])
       .then(([watchlistPayload, applicationsPayload, benchmarkPayload]) => {
         setWatchlist(watchlistPayload.items);
         setApplications(applicationsPayload.items);
@@ -47,7 +44,7 @@ export default function GrowthPage() {
         setError(fetchError instanceof Error ? fetchError.message : "Unable to load growth features");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   async function onAddWatchlist() {
     if (!token) return;
@@ -128,6 +125,7 @@ export default function GrowthPage() {
           <input
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             onChange={(event) => setCompanyInput(event.target.value)}
+            placeholder="Company name"
             value={companyInput}
           />
           <button
