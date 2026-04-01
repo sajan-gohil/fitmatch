@@ -1,4 +1,5 @@
 import type {
+  BillingEntitlementsResponse,
   MatchDetailResponse,
   MatchesResponse,
   OnboardingPayload,
@@ -80,8 +81,48 @@ export async function getMatchDetail(token: string, externalJobId: string) {
   });
 
   if (!response.ok) {
+    if (response.status === 402) {
+      throw new Error("Upgrade required");
+    }
     throw new Error("Unable to load match detail");
   }
 
   return response.json() as Promise<MatchDetailResponse>;
+}
+
+export async function getBillingEntitlements(token: string) {
+  const response = await fetch(`${API_BASE_URL}/billing/entitlements`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to load billing entitlements");
+  }
+  return response.json() as Promise<BillingEntitlementsResponse>;
+}
+
+export async function createCheckoutSession(token: string, plan: "pro" | "lifetime") {
+  const response = await fetch(`${API_BASE_URL}/billing/checkout-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildHeaders(token),
+    },
+    body: JSON.stringify({ plan }),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to create checkout session");
+  }
+  return response.json() as Promise<{ id: string; url: string; price_id: string; plan: string }>;
+}
+
+export async function createPortalSession(token: string) {
+  const response = await fetch(`${API_BASE_URL}/billing/portal-session`, {
+    method: "POST",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to open billing portal");
+  }
+  return response.json() as Promise<{ url: string }>;
 }

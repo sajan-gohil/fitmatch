@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BillingActions } from "@/components/billing-actions";
 import { getMatchDetail } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { MatchDetailResponse } from "@/lib/types";
@@ -14,6 +15,7 @@ export default function MatchDetailPage() {
   const token = getToken();
   const [detail, setDetail] = useState<MatchDetailResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loading, setLoading] = useState(Boolean(token && externalJobId));
 
   useEffect(() => {
@@ -22,9 +24,13 @@ export default function MatchDetailPage() {
     }
 
     getMatchDetail(token, externalJobId)
-      .then((payload) => setDetail(payload))
+      .then((payload) => {
+        setDetail(payload);
+        setUpgradeRequired(false);
+      })
       .catch((fetchError) => {
         const message = fetchError instanceof Error ? fetchError.message : "Unable to load detail";
+        setUpgradeRequired(message === "Upgrade required");
         setError(message);
       })
       .finally(() => setLoading(false));
@@ -38,6 +44,12 @@ export default function MatchDetailPage() {
       {!token || !externalJobId ? <p className="mt-4 text-sm text-red-600">Sign in and select a match to view details.</p> : null}
       {loading ? <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">Loading match detail...</p> : null}
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+      {upgradeRequired ? (
+        <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          This detailed match explanation is a paid feature.
+          <BillingActions />
+        </div>
+      ) : null}
       {detail ? (
         <article className="mt-6 rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{String(detail.job.title ?? "Untitled role")}</h1>
