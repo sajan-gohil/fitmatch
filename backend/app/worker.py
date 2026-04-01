@@ -5,6 +5,7 @@ from app.core.notifications import (
     evaluate_notifications_for_user,
     run_weekly_digest,
 )
+from app.core.affiliate import sync_catalog
 from app.core.job_ingestion import ingest_with_retry, scrape_schedule
 from app.core.resume_store import list_resume_owners
 from app.core.settings import get_settings
@@ -73,3 +74,8 @@ def dispatch_notifications_incremental() -> dict[str, object]:
 @celery_app.task(name="fitmatch.worker.send_weekly_digest")
 def send_weekly_digest() -> dict[str, object]:
     return run_weekly_digest()
+
+
+@celery_app.task(name="fitmatch.worker.sync_affiliate_catalog")
+def sync_affiliate_catalog(force: bool = False) -> dict[str, object]:
+    return sync_catalog(force=force)

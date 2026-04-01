@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from app.core.auth import AuthUser, get_current_user
+from app.core.affiliate import build_contextual_course_placements
 from app.core.job_ingestion import list_ingested_jobs
 from app.core.matching import compute_match_score
 from app.core.phase7_intelligence import (
@@ -53,6 +54,10 @@ def get_job_resume_analysis(
     return {
         "tier": tier,
         **apply_preview_gating(report, rewrites, is_paid=is_paid),
+        "course_recommendations": build_contextual_course_placements(
+            missing_skills=report["skill_gap"]["missing_skills"],
+            resume_scoring=report["resume_scoring"],
+        ),
     }
 
 
