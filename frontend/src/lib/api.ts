@@ -2,6 +2,7 @@ import type {
   BillingEntitlementsResponse,
   MatchDetailResponse,
   MatchesResponse,
+  NotificationFeedResponse,
   OnboardingPayload,
   ResumeIntelligenceResponse,
   ResumeUploadResponse,
@@ -139,4 +140,30 @@ export async function createPortalSession(token: string) {
     throw new Error("Unable to open billing portal");
   }
   return response.json() as Promise<{ url: string }>;
+}
+
+export async function listNotifications(token: string, unreadOnly = false) {
+  const response = await fetch(`${API_BASE_URL}/notifications?unread_only=${unreadOnly ? "true" : "false"}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to load notifications");
+  }
+  return response.json() as Promise<NotificationFeedResponse>;
+}
+
+export async function markNotificationRead(token: string, notificationId: string, read: boolean) {
+  const response = await fetch(`${API_BASE_URL}/notifications/${encodeURIComponent(notificationId)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildHeaders(token),
+    },
+    body: JSON.stringify({ read }),
+  });
+  if (!response.ok) {
+    throw new Error("Unable to update notification");
+  }
+  return response.json() as Promise<{ id: string; read: boolean }>;
 }

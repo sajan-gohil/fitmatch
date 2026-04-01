@@ -83,3 +83,21 @@ export type BillingEntitlementsResponse = {
   status: string;
   is_paid: boolean;
 };
+
+export type NotificationItem = {
+  id: string;
+  trigger: "high_match" | "watchlist" | "salary_threshold" | "freshness" | "deadline";
+  title: string;
+  body: string;
+  channels: ("email" | "in_app" | "sms")[];
+  metadata: Record<string, unknown>;
+  read: boolean;
+  created_at: string;
+  read_at: string | null;
+};
+
+export type NotificationFeedResponse = {
+  items: NotificationItem[];
+  total: number;
+  unread_count: number;
+};

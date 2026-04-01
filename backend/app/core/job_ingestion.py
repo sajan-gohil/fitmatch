@@ -20,6 +20,8 @@ class CanonicalJob:
     posted_at: datetime | None
     ats: str
     source_url: str
+    salary_min: int | None = None
+    application_deadline: datetime | None = None
 
 
 class BaseATSAdapter:
@@ -53,6 +55,8 @@ class GreenhouseAdapter(BaseATSAdapter):
                     posted_at=_parse_datetime(item.get("updated_at")),
                     ats=self.ats,
                     source_url=source_url,
+                    salary_min=_parse_salary_min(item.get("salary_min")),
+                    application_deadline=_parse_datetime_or_none(item.get("application_deadline")),
                 )
             )
         return jobs
@@ -80,6 +84,8 @@ class LeverAdapter(BaseATSAdapter):
                     posted_at=_parse_datetime(item.get("createdAt")),
                     ats=self.ats,
                     source_url=source_url,
+                    salary_min=_parse_salary_min(item.get("salary_min")),
+                    application_deadline=_parse_datetime_or_none(item.get("application_deadline")),
                 )
             )
         return jobs
@@ -111,6 +117,8 @@ class WorkdayAdapter(BaseATSAdapter):
                     posted_at=_parse_datetime(item.get("postedOn")),
                     ats=self.ats,
                     source_url=source_url,
+                    salary_min=_parse_salary_min(item.get("salary_min")),
+                    application_deadline=_parse_datetime_or_none(item.get("application_deadline")),
                 )
             )
         return jobs
@@ -148,6 +156,8 @@ class SmartRecruitersAdapter(BaseATSAdapter):
                     posted_at=_parse_datetime(item.get("releasedDate")),
                     ats=self.ats,
                     source_url=source_url,
+                    salary_min=_parse_salary_min(item.get("salary_min")),
+                    application_deadline=_parse_datetime_or_none(item.get("application_deadline")),
                 )
             )
         return jobs
@@ -174,6 +184,8 @@ class AshbyAdapter(BaseATSAdapter):
                     posted_at=_parse_datetime(item.get("publishedDate")),
                     ats=self.ats,
                     source_url=source_url,
+                    salary_min=_parse_salary_min(item.get("salary_min")),
+                    application_deadline=_parse_datetime_or_none(item.get("application_deadline")),
                 )
             )
         return jobs
@@ -253,6 +265,9 @@ class IngestionPipeline:
             INGESTED_JOBS[dedup_key] = {
                 **asdict(job),
                 "posted_at": job.posted_at.isoformat() if job.posted_at else None,
+                "application_deadline": (
+                    job.application_deadline.isoformat() if job.application_deadline else None
+                ),
                 "dedup_key": dedup_key,
                 "embedding": generate_embedding(
                     " ".join([job.title, job.description, job.company_name, job.location or ""])
@@ -283,6 +298,8 @@ class IngestionPipeline:
             posted_at=job.posted_at,
             ats=job.ats,
             source_url=job.source_url,
+            salary_min=job.salary_min,
+            application_deadline=job.application_deadline,
         )
 
     def _dedup_key(self, job: CanonicalJob) -> str:
@@ -424,3 +441,25 @@ def _parse_datetime(value: Any) -> datetime | None:
             pass
 
     raise ValueError(f"Unsupported datetime value: {json.dumps(value, default=str)}")
+
+
+def _parse_datetime_or_none(value: Any) -> datetime | None:
+    try:
+        return _parse_datetime(value)
+    except ValueError:
+        return None
+
+
+def _parse_salary_min(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        parsed = int(value)
+        return parsed if parsed >= 0 else None
+    if isinstance(value, str):
+        digits = "".join(char for char in value if char.isdigit())
+        if not digits:
+            return None
+        parsed = int(digits)
+        return parsed if parsed >= 0 else None
+    return None

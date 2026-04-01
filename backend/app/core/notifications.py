@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from threading import Lock
 from typing import Any, Literal
+from uuid import uuid4
 
-from app.core.job_ingestion import list_ingested_jobs
 from app.core.matching import list_top_matches_for_user
 from app.core.onboarding_store import get_user_preferences
 from app.core.resume_store import get_resumes_for_user
@@ -136,11 +136,13 @@ def get_notification_preferences(user_email: str) -> dict[str, Any]:
 
 def save_notification_preferences(user_email: str, payload: dict[str, Any]) -> dict[str, Any]:
     current = _notification_preferences.get(user_email, _default_preference())
+    quiet_hours_payload = payload.get("quiet_hours")
+    quiet_hours = quiet_hours_payload if isinstance(quiet_hours_payload, dict) else {}
     updated = NotificationPreference(
         channels=_normalize_channels(payload.get("channels", list(current.channels))),
         enabled_triggers=_normalize_triggers(payload.get("enabled_triggers", list(current.enabled_triggers))),
-        quiet_hours_start=_to_hour(payload.get("quiet_hours", {}).get("start") if isinstance(payload.get("quiet_hours"), dict) else None, current.quiet_hours_start),
-        quiet_hours_end=_to_hour(payload.get("quiet_hours", {}).get("end") if isinstance(payload.get("quiet_hours"), dict) else None, current.quiet_hours_end),
+        quiet_hours_start=_to_hour(quiet_hours.get("start"), current.quiet_hours_start),
+        quiet_hours_end=_to_hour(quiet_hours.get("end"), current.quiet_hours_end),
         min_match_score=_to_float(payload.get("min_match_score"), current.min_match_score),
         min_salary=_to_int(payload.get("min_salary"), current.min_salary),
         watchlist_companies=_normalize_watchlist(payload.get("watchlist_companies", list(current.watchlist_companies))),
@@ -231,7 +233,7 @@ def _enqueue_notification(
     metadata: dict[str, Any],
 ) -> dict[str, Any]:
     notification = {
-        "id": f"notif-{len(_notifications_by_user.get(user_email, [])) + 1}",
+        "id": f"notif-{uuid4()}",
         "trigger": trigger,
         "title": title,
         "body": body,
@@ -430,6 +432,4 @@ def get_email_outbox() -> list[dict[str, Any]]:
 def all_notification_users() -> list[str]:
     users = set(_notification_preferences.keys())
     users.update(_notifications_by_user.keys())
-    for job in list_ingested_jobs():
-        del job
     return sorted(users)

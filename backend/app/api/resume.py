@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
@@ -46,6 +47,7 @@ async def upload_resume(
         "file_size": len(data),
         "content_type": file.content_type,
         "parsed": parsed,
+        "uploaded_at": datetime.now(UTC).isoformat(),
         "embedding": generate_embedding(
             " ".join(
                 [

@@ -19,3 +19,8 @@ def test_settings_load_from_env(monkeypatch) -> None:
     assert settings.stripe_pro_price_id == "price_pro_monthly"
     assert settings.stripe_lifetime_price_id == "price_lifetime_one_time"
     assert settings.app_url == "http://localhost:3000"
+    assert settings.notification_high_match_threshold == 80.0
+    assert settings.notification_resume_stale_days == 90
+    assert settings.notification_digest_weekday == 0
+    assert settings.notification_digest_hour_utc == 14
+    assert settings.notification_default_min_salary == 0
