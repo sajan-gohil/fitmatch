@@ -8,6 +8,7 @@ from app.core.notifications import (
 from app.core.affiliate import sync_catalog
 from app.core.job_ingestion import ingest_with_retry, scrape_schedule
 from app.core.phase10_growth import evaluate_scrape_rate_limit, queue_partition_for_source
+from app.core.phase11_extensions import get_queue_throughput_controls
 from app.core.resume_store import list_resume_owners
 from app.core.settings import get_settings
 
@@ -80,15 +81,22 @@ def dispatch_notifications_for_user(user_email: str) -> dict[str, object]:
 def dispatch_notifications_incremental() -> dict[str, object]:
     known_users = set(list_resume_owners())
     known_users.update(all_notification_users())
+    controls = get_queue_throughput_controls()
+    batch_size = int(controls["queue_batch_size"])
     dispatched = 0
     queued = 0
-    for user_email in sorted(known_users):
+    for user_email in sorted(known_users)[:batch_size]:
         if not isinstance(user_email, str) or not user_email:
             continue
         result = dispatch_notifications_for_user(user_email)
         queued += int(result.get("queued", 0))
         dispatched += 1
-    return {"dispatched_users": dispatched, "queued_notifications": queued}
+    return {
+        "dispatched_users": dispatched,
+        "queued_notifications": queued,
+        "batch_size": batch_size,
+        "eligible_users": len(known_users),
+    }
 
 
 @celery_app.task(name="fitmatch.worker.send_weekly_digest")
