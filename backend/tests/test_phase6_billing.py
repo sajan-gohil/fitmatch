@@ -25,36 +25,45 @@ def test_checkout_session_supports_pro_and_lifetime() -> None:
 
     pro = client.post("/api/billing/checkout-session", headers=headers, json={"plan": "pro"})
     assert pro.status_code == 200
-    assert pro.json()["price_id"] == "price_pro_monthly"
+    assert pro.json()["plan_id"] == "plan_pro_monthly"
 
     lifetime = client.post("/api/billing/checkout-session", headers=headers, json={"plan": "lifetime"})
     assert lifetime.status_code == 200
-    assert lifetime.json()["price_id"] == "price_lifetime_one_time"
+    assert lifetime.json()["plan_id"] == "plan_lifetime_one_time"
 
 
 def test_billing_portal_session_available() -> None:
     headers = _auth_headers("phase6-portal@example.com")
     response = client.post("/api/billing/portal-session", headers=headers)
     assert response.status_code == 200
-    assert response.json()["url"].startswith("https://billing.stripe.com/p/session/")
+    assert response.json()["url"].startswith("https://dashboard.razorpay.com/app/subscriptions/")
 
 
 def test_webhook_updates_entitlements_with_signature(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setenv("FITMATCH_STRIPE_WEBHOOK_SECRET", "whsec_phase6")
+    monkeypatch.setenv("FITMATCH_RAZORPAY_WEBHOOK_SECRET", "whsec_phase6")
     get_settings.cache_clear()
     email = "phase6-entitlements@example.com"
     headers = _auth_headers(email)
     payload = {
-        "type": "checkout.session.completed",
-        "data": {
-            "object": {
-                "id": "cs_test_entitlement",
-                "customer_email": email,
-                "customer": "cus_phase6",
-                "subscription": "sub_phase6",
-                "status": "active",
-                "plan": "lifetime",
-            }
+        "event": "subscription.activated",
+        "payload": {
+            "subscription": {
+                "entity": {
+                    "id": "sub_phase6",
+                    "customer_id": "cust_phase6",
+                    "status": "active",
+                    "plan_id": "plan_lifetime_one_time",
+                    "current_end": 1767225600,
+                    "notes": {"email": email},
+                }
+            },
+            "payment": {
+                "entity": {
+                    "id": "pay_phase6",
+                    "order_id": "order_phase6",
+                    "status": "captured",
+                }
+            },
         },
     }
     payload_bytes = json.dumps(payload).encode("utf-8")
@@ -63,7 +72,7 @@ def test_webhook_updates_entitlements_with_signature(monkeypatch: MonkeyPatch) -
     webhook = client.post(
         "/api/billing/webhook",
         content=payload_bytes,
-        headers={"Stripe-Signature": signature},
+        headers={"X-Razorpay-Signature": signature},
     )
     assert webhook.status_code == 200
     assert webhook.json()["plan"] == "lifetime"

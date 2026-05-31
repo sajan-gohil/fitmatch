@@ -28,11 +28,13 @@ pytest
 
 ## Billing (Phase 6 scaffold)
 
-- Configure Stripe-related settings in `.env`:
-  - `FITMATCH_STRIPE_SECRET_KEY`
-  - `FITMATCH_STRIPE_WEBHOOK_SECRET`
-  - `FITMATCH_STRIPE_PRO_PRICE_ID`
-  - `FITMATCH_STRIPE_LIFETIME_PRICE_ID`
+- Configure Razorpay-related settings in `.env`:
+  - `FITMATCH_RAZORPAY_KEY_ID`
+  - `FITMATCH_RAZORPAY_KEY_SECRET`
+  - `FITMATCH_RAZORPAY_WEBHOOK_SECRET`
+  - `FITMATCH_RAZORPAY_PRO_PLAN_ID`
+  - `FITMATCH_RAZORPAY_LIFETIME_PLAN_ID`
+- Stripe settings are retained as unused legacy scaffolding.
 - Available billing routes:
   - `POST /api/billing/checkout-session`
   - `POST /api/billing/portal-session`

@@ -16,6 +16,8 @@ def test_settings_load_from_env(monkeypatch) -> None:
     assert settings.llm_provider == "openai"
     assert settings.embedding_model == "text-embedding-3-small"
     assert settings.embedding_dimensions == 1536
+    assert settings.razorpay_pro_plan_id == "plan_pro_monthly"
+    assert settings.razorpay_lifetime_plan_id == "plan_lifetime_one_time"
     assert settings.stripe_pro_price_id == "price_pro_monthly"
     assert settings.stripe_lifetime_price_id == "price_lifetime_one_time"
     assert settings.app_url == "http://localhost:3000"
