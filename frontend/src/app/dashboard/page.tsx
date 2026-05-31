@@ -160,13 +160,14 @@ export default function DashboardPage() {
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">No matches available yet.</p>
             ) : (
               <ul className="mt-3 space-y-2">
-                {firstBatchMatches.map((match) => {
-                  const externalJobId = String(match.job.external_job_id ?? "");
-                  const jobTitle = String(match.job.title ?? "Untitled role");
-                  const company = String(match.job.company_name ?? "Unknown company");
-                  const location = String(match.job.location ?? "Unknown location");
+                {firstBatchMatches.map((match, index) => {
+                  const externalJobId = match.job.external_job_id ? `${match.job.external_job_id}` : "";
+                  const jobTitle = match.job.title ? `${match.job.title}` : "Untitled role";
+                  const company = match.job.company_name ? `${match.job.company_name}` : "Unknown company";
+                  const location = match.job.location ? `${match.job.location}` : "Unknown location";
+                  const matchKey = externalJobId ? `${externalJobId}-${index}` : `match-${index}`;
                   return (
-                    <li key={`${externalJobId}-${jobTitle}`} className="rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                    <li key={matchKey} className="rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
                       <p className="font-medium text-zinc-900 dark:text-zinc-100">
                         {externalJobId ? (
                           <Link className="hover:underline" href={`/matches/${encodeURIComponent(externalJobId)}`}>

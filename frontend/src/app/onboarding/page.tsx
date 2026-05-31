@@ -61,7 +61,9 @@ export default function OnboardingPage() {
     let locationsToSave = normalizedLocations;
     if (plan === "free" && normalizedLocations.length > FREE_LOCATION_CAP) {
       locationsToSave = normalizedLocations.slice(0, FREE_LOCATION_CAP);
-      setLocationNotice(`Free plan saves up to ${FREE_LOCATION_CAP} locations. We'll keep the first ${FREE_LOCATION_CAP}.`);
+      setLocationNotice(
+        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Only the first ${FREE_LOCATION_CAP} will be saved.`,
+      );
     } else {
       setLocationNotice(null);
     }
