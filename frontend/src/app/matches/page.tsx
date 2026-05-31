@@ -8,6 +8,8 @@ import { getBillingEntitlements, listMatches } from "@/lib/api";
 import { getMatchFilters, getToken, saveMatchFilters } from "@/lib/auth";
 import type { Match } from "@/lib/types";
 
+const FREE_LOCATION_CAP = 2;
+
 export default function MatchesPage() {
   const [token, setToken] = useState<string | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -87,6 +89,7 @@ export default function MatchesPage() {
       {tier === "free" && enforcedLimit ? (
         <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
           <p>Free tier currently shows up to {enforcedLimit} matches per refresh.</p>
+          <p className="mt-1">Free tier saves up to {FREE_LOCATION_CAP} preferred locations during onboarding.</p>
           <p className="mt-1">Detailed match explanations are available on paid plans.</p>
           <BillingActions />
         </div>

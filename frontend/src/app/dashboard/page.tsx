@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { listMatches, listNotifications, markNotificationRead } from "@/lib/api";
 import { getToken, isOnboardingCompleted } from "@/lib/auth";
-import type { NotificationItem } from "@/lib/types";
+import type { Match, NotificationItem } from "@/lib/types";
 
 const FIRST_BATCH_LIMIT = 3;
 
@@ -14,6 +14,8 @@ export default function DashboardPage() {
   const [signedIn, setSignedIn] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [firstBatchCount, setFirstBatchCount] = useState<number | null>(null);
+  const [firstBatchMatches, setFirstBatchMatches] = useState<Match[]>([]);
+  const [matchError, setMatchError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [notificationError, setNotificationError] = useState<string | null>(null);
 
@@ -35,8 +37,17 @@ export default function DashboardPage() {
       return;
     }
     listMatches(token, FIRST_BATCH_LIMIT)
-      .then((payload) => setFirstBatchCount(payload.total))
-      .catch(() => setFirstBatchCount(0));
+      .then((payload) => {
+        setFirstBatchCount(payload.total);
+        setFirstBatchMatches(payload.matches);
+        setMatchError(null);
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : "Unable to load match preview";
+        setFirstBatchCount(0);
+        setFirstBatchMatches([]);
+        setMatchError(message);
+      });
 
     listNotifications(token)
       .then((payload) => setNotifications(payload.items))
@@ -138,6 +149,45 @@ export default function DashboardPage() {
                 ))}
               </ul>
             )}
+          </section>
+        ) : null}
+
+        {signedIn && onboarded ? (
+          <section className="mt-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Top matches</h2>
+            {matchError ? <p className="mt-2 text-sm text-red-600">{matchError}</p> : null}
+            {firstBatchMatches.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">No matches available yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {firstBatchMatches.map((match) => {
+                  const externalJobId = String(match.job.external_job_id ?? "");
+                  const jobTitle = String(match.job.title ?? "Untitled role");
+                  const company = String(match.job.company_name ?? "Unknown company");
+                  const location = String(match.job.location ?? "Unknown location");
+                  return (
+                    <li key={`${externalJobId}-${jobTitle}`} className="rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {externalJobId ? (
+                          <Link className="hover:underline" href={`/matches/${encodeURIComponent(externalJobId)}`}>
+                            {jobTitle}
+                          </Link>
+                        ) : (
+                          jobTitle
+                        )}
+                      </p>
+                      <p className="mt-1 text-zinc-600 dark:text-zinc-300">
+                        {company} • {location}
+                      </p>
+                      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">Match score: {match.score}%</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <Link className="mt-3 inline-flex text-xs font-medium text-zinc-700 hover:underline dark:text-zinc-200" href="/matches">
+              View full match list
+            </Link>
           </section>
         ) : null}
       </main>
