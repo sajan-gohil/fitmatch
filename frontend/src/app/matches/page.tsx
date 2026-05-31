@@ -6,9 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { BillingActions } from "@/components/billing-actions";
 import { getBillingEntitlements, listMatches } from "@/lib/api";
 import { getMatchFilters, getToken, saveMatchFilters } from "@/lib/auth";
+import { FREE_LOCATION_CAP } from "@/lib/constants";
 import type { Match } from "@/lib/types";
-
-const FREE_LOCATION_CAP = 2;
 
 export default function MatchesPage() {
   const [token, setToken] = useState<string | null>(null);

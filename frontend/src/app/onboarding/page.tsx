@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { getToken, markOnboardingCompleted } from "@/lib/auth";
+import { FREE_LOCATION_CAP } from "@/lib/constants";
 import { getBillingEntitlements, saveOnboarding } from "@/lib/api";
 import type { WorkType } from "@/lib/types";
 
 const WORK_TYPES: WorkType[] = ["remote", "hybrid", "onsite"];
-const FREE_LOCATION_CAP = 2;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function OnboardingPage() {
     if (plan === "free" && normalizedLocations.length > FREE_LOCATION_CAP) {
       locationsToSave = normalizedLocations.slice(0, FREE_LOCATION_CAP);
       setLocationNotice(
-        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Only the first ${FREE_LOCATION_CAP} will be saved.`,
+        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Extra locations won't be saved.`,
       );
     } else {
       setLocationNotice(null);
