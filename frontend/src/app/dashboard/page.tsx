@@ -9,6 +9,14 @@ import type { Match, NotificationItem } from "@/lib/types";
 
 const FIRST_BATCH_LIMIT = 3;
 
+function stringOrEmpty(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function stringOrFallback(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
+
 export default function DashboardPage() {
   const [hydrated, setHydrated] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -161,10 +169,10 @@ export default function DashboardPage() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {firstBatchMatches.map((match, index) => {
-                  const externalJobId = typeof match.job.external_job_id === "string" ? match.job.external_job_id : "";
-                  const jobTitle = typeof match.job.title === "string" ? match.job.title : "Untitled role";
-                  const company = typeof match.job.company_name === "string" ? match.job.company_name : "Unknown company";
-                  const location = typeof match.job.location === "string" ? match.job.location : "Unknown location";
+                  const externalJobId = stringOrEmpty(match.job.external_job_id);
+                  const jobTitle = stringOrFallback(match.job.title, "Untitled role");
+                  const company = stringOrFallback(match.job.company_name, "Unknown company");
+                  const location = stringOrFallback(match.job.location, "Unknown location");
                   const matchKey = `${externalJobId || "match"}-${index}`;
                   return (
                     <li key={matchKey} className="rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">

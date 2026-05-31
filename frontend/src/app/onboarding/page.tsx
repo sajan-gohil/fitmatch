@@ -64,7 +64,7 @@ export default function OnboardingPage() {
     if (plan === "free" && normalizedLocations.length > FREE_LOCATION_CAP) {
       locationsToSave = normalizedLocations.slice(0, FREE_LOCATION_CAP);
       setLocationNotice(
-        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Extra locations won't be saved.`,
+        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Extra locations will be ignored.`,
       );
     } else {
       setLocationNotice(null);
