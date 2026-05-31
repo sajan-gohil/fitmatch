@@ -81,16 +81,25 @@ def _upgrade_to_lifetime(email: str) -> None:
     apply_webhook_event(
         json.dumps(
             {
-                "type": "checkout.session.completed",
-                "data": {
-                    "object": {
-                        "id": "cs_phase10_lifetime",
-                        "customer_email": email,
-                        "customer": "cus_phase10",
-                        "subscription": "sub_phase10",
-                        "status": "active",
-                        "plan": "lifetime",
-                    }
+                "event": "subscription.activated",
+                "payload": {
+                    "subscription": {
+                        "entity": {
+                            "id": "sub_phase10",
+                            "customer_id": "cust_phase10",
+                            "status": "active",
+                            "plan_id": "plan_lifetime_one_time",
+                            "current_end": 1767225600,
+                            "notes": {"email": email},
+                        }
+                    },
+                    "payment": {
+                        "entity": {
+                            "id": "pay_phase10",
+                            "order_id": "order_phase10",
+                            "status": "captured",
+                        }
+                    },
                 },
             }
         ).encode("utf-8")
