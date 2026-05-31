@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { getToken, markOnboardingCompleted } from "@/lib/auth";
-import { saveOnboarding } from "@/lib/api";
+import { FREE_LOCATION_CAP } from "@/lib/constants";
+import { getBillingEntitlements, saveOnboarding } from "@/lib/api";
 import type { WorkType } from "@/lib/types";
 
 const WORK_TYPES: WorkType[] = ["remote", "hybrid", "onsite"];
@@ -14,10 +15,24 @@ export default function OnboardingPage() {
   const [targetRoles, setTargetRoles] = useState("Software Engineer");
   const [preferredLocations, setPreferredLocations] = useState("Toronto");
   const [workTypes, setWorkTypes] = useState<WorkType[]>(["remote"]);
+  const [plan, setPlan] = useState<"free" | "pro" | "lifetime">("free");
   const [error, setError] = useState<string | null>(null);
+  const [locationNotice, setLocationNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const selectedWorkTypes = useMemo(() => new Set(workTypes), [workTypes]);
+  const locationMessage =
+    locationNotice ?? (plan === "free" ? `Free tier saves up to ${FREE_LOCATION_CAP} preferred locations.` : null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+    getBillingEntitlements(token)
+      .then((payload) => setPlan(payload.plan))
+      .catch(() => setPlan("free"));
+  }, []);
 
   function toggleWorkType(type: WorkType) {
     setWorkTypes((current) =>
@@ -41,10 +56,24 @@ export default function OnboardingPage() {
     setLoading(true);
     setError(null);
 
+    const normalizedLocations = preferredLocations
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    let locationsToSave = normalizedLocations;
+    if (plan === "free" && normalizedLocations.length > FREE_LOCATION_CAP) {
+      locationsToSave = normalizedLocations.slice(0, FREE_LOCATION_CAP);
+      setLocationNotice(
+        `Free plan is limited to ${FREE_LOCATION_CAP} locations. Extra locations will be ignored.`,
+      );
+    } else {
+      setLocationNotice(null);
+    }
+
     try {
       await saveOnboarding(token, {
         target_roles: targetRoles.split(",").map((value) => value.trim()).filter(Boolean),
-        preferred_locations: preferredLocations.split(",").map((value) => value.trim()).filter(Boolean),
+        preferred_locations: locationsToSave,
         work_type_preferences: workTypes,
       });
       markOnboardingCompleted();
@@ -83,6 +112,7 @@ export default function OnboardingPage() {
               value={preferredLocations}
             />
           </label>
+          {locationMessage ? <p className="text-xs text-amber-700 dark:text-amber-300">{locationMessage}</p> : null}
 
           <fieldset>
             <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Work type preferences</legend>
