@@ -161,11 +161,11 @@ export default function DashboardPage() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {firstBatchMatches.map((match, index) => {
-                  const externalJobId = match.job.external_job_id ? `${match.job.external_job_id}` : "";
-                  const jobTitle = match.job.title ? `${match.job.title}` : "Untitled role";
-                  const company = match.job.company_name ? `${match.job.company_name}` : "Unknown company";
-                  const location = match.job.location ? `${match.job.location}` : "Unknown location";
-                  const matchKey = externalJobId ? `${externalJobId}-${index}` : `match-${index}`;
+                  const externalJobId = typeof match.job.external_job_id === "string" ? match.job.external_job_id : "";
+                  const jobTitle = typeof match.job.title === "string" ? match.job.title : "Untitled role";
+                  const company = typeof match.job.company_name === "string" ? match.job.company_name : "Unknown company";
+                  const location = typeof match.job.location === "string" ? match.job.location : "Unknown location";
+                  const matchKey = `${externalJobId || "match"}-${index}`;
                   return (
                     <li key={matchKey} className="rounded-md border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
                       <p className="font-medium text-zinc-900 dark:text-zinc-100">

@@ -21,6 +21,8 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
 
   const selectedWorkTypes = useMemo(() => new Set(workTypes), [workTypes]);
+  const locationMessage =
+    locationNotice ?? (plan === "free" ? `Free tier saves up to ${FREE_LOCATION_CAP} preferred locations.` : null);
 
   useEffect(() => {
     const token = getToken();
@@ -110,12 +112,7 @@ export default function OnboardingPage() {
               value={preferredLocations}
             />
           </label>
-          {plan === "free" ? (
-            <p className="text-xs text-amber-700 dark:text-amber-300">
-              Free tier saves up to {FREE_LOCATION_CAP} preferred locations.
-            </p>
-          ) : null}
-          {locationNotice ? <p className="text-xs text-amber-700 dark:text-amber-300">{locationNotice}</p> : null}
+          {locationMessage ? <p className="text-xs text-amber-700 dark:text-amber-300">{locationMessage}</p> : null}
 
           <fieldset>
             <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Work type preferences</legend>
