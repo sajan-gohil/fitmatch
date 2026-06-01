@@ -386,7 +386,7 @@ Resend.com — developer-friendly transactional email with React Email templates
 Push Notifications
 Firebase Cloud Messaging (free) for web push. Twilio for SMS (pay-as-you-go).
 Payments
-Stripe — subscriptions, one-time LTD purchases, billing portal.
+Razorpay — subscriptions, one-time LTD purchases, billing portal.
 Hosting
 Railway.app or Render for backend + workers. Vercel for frontend. Very low cost for early scale.
 Monitoring
@@ -402,7 +402,7 @@ Goal: Working product that scrapes jobs, matches resumes, and collects first pai
     • Week 2–3: Scraper for 5 ATS types (Greenhouse, Lever, Workday, SmartRecruiters, Ashby) — target 100 companies
     • Week 3–4: Embedding pipeline — resume vectorization + job vectorization + pgvector similarity search
     • Week 4–5: Match results UI, locality filter, basic free tier UX
-    • Week 5–6: Stripe integration, Pro tier paywall, basic gap analysis report
+    • Week 5–6: Razorpay integration, Pro tier paywall, basic gap analysis report
     • Week 6–7: Email notification system, weekly digest for free users
     • Week 7–8: Landing page, onboarding flow, beta invite system
 
