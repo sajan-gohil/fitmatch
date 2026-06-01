@@ -40,7 +40,7 @@ This task list includes only implementation work that a coding agent can execute
   - [ ] Implement first-match experience target (return initial batch quickly after onboarding).
 
 - [x] **Phase 6 — Billing, tiers, and access control**
-  - [x] Integrate Stripe subscriptions + one-time purchase flows and webhook handling.
+  - [x] Integrate Razorpay subscriptions + one-time purchase flows and webhook handling.
   - [x] Implement plan entitlements (Free, Pro, Lifetime) in authorization middleware.
   - [x] Add upgrade/paywall UX at premium feature boundaries.
   - [x] Add billing portal/account management entry points.

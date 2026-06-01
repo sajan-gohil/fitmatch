@@ -42,10 +42,10 @@ def create_portal(user: AuthUser = Depends(get_current_user)) -> dict[str, str]:
 
 
 @router.post("/webhook", status_code=status.HTTP_200_OK)
-async def stripe_webhook(
+async def razorpay_webhook(
     request: Request,
-    stripe_signature: str | None = Header(default=None, alias="Stripe-Signature"),
+    razorpay_signature: str | None = Header(default=None, alias="X-Razorpay-Signature"),
 ) -> dict[str, object]:
     payload = await request.body()
-    verify_webhook_signature(payload, stripe_signature)
+    verify_webhook_signature(payload, razorpay_signature)
     return apply_webhook_event(payload)

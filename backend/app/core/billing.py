@@ -10,8 +10,8 @@ from typing import Literal
 
 from fastapi import HTTPException, status
 
-from app.core.settings import get_settings
 from app.core.phase11_extensions import apply_referral_credit_for_paid_plan
+from app.core.settings import get_settings
 
 PlanName = Literal["free", "pro", "lifetime"]
 
@@ -20,8 +20,9 @@ PlanName = Literal["free", "pro", "lifetime"]
 class SubscriptionState:
     plan: PlanName
     status: str
-    stripe_customer_id: str | None = None
-    stripe_subscription_id: str | None = None
+    razorpay_customer_id: str | None = None
+    razorpay_subscription_id: str | None = None
+    razorpay_order_id: str | None = None
     period_end: datetime | None = None
     checkout_session_id: str | None = None
 
@@ -47,17 +48,17 @@ def _next_checkout_session_id() -> str:
     global _session_counter
     with _session_counter_lock:
         _session_counter += 1
-        return f"cs_test_{_session_counter:06d}"
+        return f"order_test_{_session_counter:06d}"
 
 
 def create_checkout_session(user_email: str, plan: PlanName) -> dict[str, str]:
     settings = get_settings()
-    price_id = settings.stripe_pro_price_id if plan == "pro" else settings.stripe_lifetime_price_id
+    plan_id = settings.razorpay_pro_plan_id if plan == "pro" else settings.razorpay_lifetime_plan_id
     session_id = _next_checkout_session_id()
     session = {
         "id": session_id,
-        "url": f"https://checkout.stripe.com/pay/{session_id}",
-        "price_id": price_id,
+        "url": f"https://rzp.io/i/{session_id}",
+        "plan_id": plan_id,
         "plan": plan,
         "customer_email": user_email,
     }
@@ -66,23 +67,26 @@ def create_checkout_session(user_email: str, plan: PlanName) -> dict[str, str]:
 
 
 def create_billing_portal_session(user_email: str) -> dict[str, str]:
-    # Fallback customer ID supports local scaffold/demo usage when no Stripe customer exists yet.
-    customer_id = get_subscription_state(user_email).stripe_customer_id or f"cus_{hashlib.sha256(user_email.encode()).hexdigest()[:10]}"
+    customer_id = get_subscription_state(user_email).razorpay_customer_id or f"cust_{hashlib.sha256(user_email.encode()).hexdigest()[:10]}"
     return {
-        "url": f"https://billing.stripe.com/p/session/{customer_id}",
+        "url": f"https://dashboard.razorpay.com/app/subscriptions/{customer_id}",
     }
 
 
 def _normalize_plan(value: str | None) -> PlanName:
-    if value == "lifetime":
+    if not value:
+        return "free"
+    normalized = value.strip().lower()
+    settings = get_settings()
+    if normalized in {"lifetime", settings.razorpay_lifetime_plan_id.lower()}:
         return "lifetime"
-    if value == "pro":
+    if normalized in {"pro", settings.razorpay_pro_plan_id.lower()}:
         return "pro"
     return "free"
 
 
 def verify_webhook_signature(payload: bytes, signature: str | None) -> None:
-    secret = get_settings().stripe_webhook_secret
+    secret = get_settings().razorpay_webhook_secret
     if not secret:
         return
     if not signature:
@@ -92,37 +96,78 @@ def verify_webhook_signature(payload: bytes, signature: str | None) -> None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid webhook signature")
 
 
+def _coerce_entity(payload: object, key: str) -> dict[str, object]:
+    if not isinstance(payload, dict):
+        return {}
+    container = payload.get(key)
+    if not isinstance(container, dict):
+        return {}
+    entity = container.get("entity")
+    if not isinstance(entity, dict):
+        return {}
+    return entity
+
+
+def _extract_email(subscription: dict[str, object], payment: dict[str, object], customer: dict[str, object]) -> str:
+    notes = subscription.get("notes")
+    if isinstance(notes, dict):
+        email = notes.get("email") or notes.get("customer_email")
+        if isinstance(email, str) and email.strip():
+            return email.strip().lower()
+    for candidate in (payment.get("email"), customer.get("email"), subscription.get("customer_email")):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip().lower()
+    return ""
+
+
 def apply_webhook_event(payload: bytes) -> dict[str, object]:
     event = json.loads(payload.decode("utf-8"))
-    event_type = str(event.get("type", ""))
-    data = event.get("data", {})
-    data_object = data.get("object", {}) if isinstance(data, dict) else {}
-    email = str(data_object.get("customer_email", "")).strip().lower()
+    event_type = str(event.get("event", ""))
+    event_payload = event.get("payload", {}) if isinstance(event, dict) else {}
+    subscription = _coerce_entity(event_payload, "subscription")
+    payment = _coerce_entity(event_payload, "payment")
+    customer = _coerce_entity(event_payload, "customer")
+    email = _extract_email(subscription, payment, customer)
     if not email:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Webhook event missing customer_email")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Webhook event missing customer email")
 
     current = get_subscription_state(email)
     updated = current
 
-    if event_type in {"checkout.session.completed", "customer.subscription.updated"}:
-        plan = _normalize_plan(str(data_object.get("plan", "")))
-        period_end_raw = data_object.get("period_end")
+    if event_type in {"subscription.activated", "subscription.charged", "subscription.completed", "payment.captured"}:
+        plan_source = subscription.get("plan_id")
+        if not isinstance(plan_source, str):
+            notes = subscription.get("notes")
+            if isinstance(notes, dict):
+                plan_source = notes.get("plan")
+        plan = _normalize_plan(plan_source if isinstance(plan_source, str) else None)
+        period_end_raw = subscription.get("current_end")
         period_end = None
         if isinstance(period_end_raw, (int, float)):
             period_end = datetime.fromtimestamp(period_end_raw, tz=timezone.utc)
+        customer_id = subscription.get("customer_id") if isinstance(subscription.get("customer_id"), str) else None
+        if not customer_id and isinstance(customer.get("id"), str):
+            customer_id = customer["id"]
+        subscription_id = subscription.get("id") if isinstance(subscription.get("id"), str) else None
+        order_id = payment.get("order_id") if isinstance(payment.get("order_id"), str) else None
         updated = SubscriptionState(
             plan=plan,
-            status=str(data_object.get("status", "active")),
-            stripe_customer_id=data_object.get("customer"),
-            stripe_subscription_id=data_object.get("subscription"),
+            status=str(subscription.get("status") or payment.get("status") or "active"),
+            razorpay_customer_id=customer_id,
+            razorpay_subscription_id=subscription_id,
+            razorpay_order_id=order_id,
             period_end=period_end,
-            checkout_session_id=data_object.get("id"),
+            checkout_session_id=order_id,
         )
-    elif event_type in {"customer.subscription.deleted"}:
-        updated = SubscriptionState(plan="free", status="canceled", stripe_customer_id=current.stripe_customer_id)
+    elif event_type in {"subscription.cancelled"}:
+        updated = SubscriptionState(
+            plan="free",
+            status="canceled",
+            razorpay_customer_id=current.razorpay_customer_id,
+        )
 
     _subscriptions[email] = updated
-    if event_type in {"checkout.session.completed", "customer.subscription.updated"} and updated.plan in {"pro", "lifetime"}:
+    if event_type in {"subscription.activated", "subscription.charged", "subscription.completed", "payment.captured"} and updated.plan in {"pro", "lifetime"}:
         apply_referral_credit_for_paid_plan(email)
     return {
         "received": True,

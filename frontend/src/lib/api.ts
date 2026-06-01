@@ -132,7 +132,7 @@ export async function createCheckoutSession(token: string, plan: "pro" | "lifeti
   if (!response.ok) {
     throw new Error("Unable to create checkout session");
   }
-  return response.json() as Promise<{ id: string; url: string; price_id: string; plan: string }>;
+  return response.json() as Promise<{ id: string; url: string; plan_id: string; plan: string }>;
 }
 
 export async function createPortalSession(token: string) {

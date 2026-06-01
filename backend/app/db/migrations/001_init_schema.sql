@@ -54,8 +54,9 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    stripe_customer_id TEXT,
-    stripe_subscription_id TEXT,
+    razorpay_customer_id TEXT,
+    razorpay_subscription_id TEXT,
+    razorpay_order_id TEXT,
     plan TEXT NOT NULL,
     status TEXT NOT NULL,
     period_end TIMESTAMPTZ,

@@ -40,6 +40,17 @@ class Settings(BaseSettings):
         default=1440,
         alias="FITMATCH_SCRAPE_TIER2_INTERVAL_MINUTES",
     )
+    razorpay_key_id: str | None = Field(default=None, alias="FITMATCH_RAZORPAY_KEY_ID")
+    razorpay_key_secret: str | None = Field(default=None, alias="FITMATCH_RAZORPAY_KEY_SECRET")
+    razorpay_webhook_secret: str | None = Field(
+        default=None, alias="FITMATCH_RAZORPAY_WEBHOOK_SECRET"
+    )
+    razorpay_pro_plan_id: str = Field(
+        default="plan_pro_monthly", alias="FITMATCH_RAZORPAY_PRO_PLAN_ID"
+    )
+    razorpay_lifetime_plan_id: str = Field(
+        default="plan_lifetime_one_time", alias="FITMATCH_RAZORPAY_LIFETIME_PLAN_ID"
+    )
     stripe_secret_key: str | None = Field(default=None, alias="FITMATCH_STRIPE_SECRET_KEY")
     stripe_webhook_secret: str | None = Field(default=None, alias="FITMATCH_STRIPE_WEBHOOK_SECRET")
     stripe_pro_price_id: str = Field(default="price_pro_monthly", alias="FITMATCH_STRIPE_PRO_PRICE_ID")
